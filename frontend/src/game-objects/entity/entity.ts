@@ -28,10 +28,10 @@ export class Entity {
       const camera = scene.cameras.main;
       camera.startFollow(this.player);
       camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+      // Watch the player and worldLayer for collisions, for the duration of the scene:
+      scene.physics.add.collider(this.player, worldLayer);
     }
 
-    // Watch the player and worldLayer for collisions, for the duration of the scene:
-    scene.physics.add.collider(this.player, worldLayer);
   }
 
   // Apply user's input to this entity.
