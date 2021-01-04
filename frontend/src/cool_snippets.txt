@@ -1,0 +1,5 @@
+Random Hex
+Math.floor(Math.random() * 16777215).toString(16)
+
+Random Between
+ Phaser.Math.Between(10, 20)
