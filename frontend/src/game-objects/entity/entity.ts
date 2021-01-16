@@ -25,18 +25,19 @@ export class Entity {
 
     if (entityId === ownEntityID) {
       this.player.debugBodyColor = 5
+
       const camera = scene.cameras.main;
       camera.startFollow(this.player);
       camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
       // Watch the player and worldLayer for collisions, for the duration of the scene:
       scene.physics.add.collider(this.player, worldLayer);
 
-      var r1 = scene.add.rectangle(x, y - 100, 148, 148, 0x6666ff);
-      scene.physics.add.existing(r1, true);
+      var rectangle = scene.add.rectangle(x, y - 100, 148, 148, 0x6666ff);
+      scene.physics.add.existing(rectangle, true);
+      scene.physics.add.collider(this.player, rectangle);
 
-      scene.physics.add.collider(this.player, r1);
     }
-
   }
 
   // Apply user's input to this entity.

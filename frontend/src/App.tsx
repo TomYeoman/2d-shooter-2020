@@ -1,8 +1,8 @@
 import Phaser from "phaser";
-import { ArrowKeys, WASDKeys } from "./constants/keybinds";
 import io from "socket.io-client";
 import { ClientInputPacket, WorldStateUpdate } from "./types";
 import { Entity } from "./game-objects/entity/entity";
+import { InputSystem } from "./inputSystem";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
   active: false,
@@ -15,9 +15,9 @@ const server_update_rate = 30;
 let tick: any = 0;
 
 export class GameScene extends Phaser.Scene {
-  private player: Phaser.Physics.Arcade.Sprite;
-  private keyboard: any;
   private socket: SocketIOClient.Socket;
+
+  playerInput: InputSystem
 
   // Player
   private entity_id: string;
@@ -26,9 +26,8 @@ export class GameScene extends Phaser.Scene {
   private pending_inputs: ClientInputPacket[] = [];
   private latestWorldUpdate: WorldStateUpdate[] = [];
   entities: { [key: string]: Entity } = {};
-  private map: Phaser.Tilemaps.Tilemap;
+  map: Phaser.Tilemaps.Tilemap;
   worldLayer: Phaser.Tilemaps.StaticTilemapLayer;
-  isKeyPressed = false
   server_reconciliation = true;
   entity_interpolation = true;
   client_side_prediction = true;
@@ -40,12 +39,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   public preload() {
-    // this.load.image("tiles", "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/tilesets/super-mario-tiles.png");
+
     this.load.image("player", "survivor-shotgun.png");
 
+    // this.load.image("tiles", "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/tilesets/super-mario-tiles.png");
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
     this.load.tilemapTiledJSON("map", "first_map.json");
-
     this.load.atlas(
       "atlas",
       "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.png",
@@ -54,24 +53,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   public create() {
-    // Establish socket communication channel
-    this.socket = io("http://localhost:4001");
 
-    this.socket.on("connect", (info: any) => {
-      console.log("Connected!");
-    });
-
-    this.socket.on("player_info", (data: any) => {
-      console.log(data);
-      this.entity_id = data.entity_id;
-    });
-
-    this.socket.on(
-      "server_world_state_update",
-      (update: WorldStateUpdate[]) => {
-        this.latestWorldUpdate = update;
-      }
-    );
+    this.setupSocketConnection();
 
     this.map = this.make.tilemap({ key: "map" });
 
@@ -99,14 +82,12 @@ export class GameScene extends Phaser.Scene {
 
     this.worldLayer.setCollisionByProperty({ collides: true });
 
-
-
     // By default, everything gets depth sorted on the screen in the order we created things. Here, we
     // want the "Above Player" layer to sit on top of the player, so we explicitly give it a depth.
     // Higher depths will sit on top of lower depth objects.
     aboveLayer.setDepth(10);
 
-    this.keyboard = this.input.keyboard.addKeys(WASDKeys);
+    this.playerInput = new InputSystem(this)
 
     this.serverVisualisation = new Entity(
       this,
@@ -119,19 +100,38 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
-  public update() {
-    // console.log("----------------------")
+  public setupSocketConnection() {
+    // Establish socket communication channel
+    this.socket = io("http://localhost:4001");
 
+    this.socket.on("connect", (info: any) => {
+      console.log("Connected!");
+    });
+
+    this.socket.on("player_info", (data: any) => {
+      console.log(data);
+      this.entity_id = data.entity_id;
+    });
+
+    this.socket.on(
+      "server_world_state_update",
+      (update: WorldStateUpdate[]) => {
+        this.latestWorldUpdate = update;
+      }
+    );
+  }
+
+  public update() {
 
     // Reset all velocity to zero, after frame processed
     for (const [key, entity] of Object.entries(this.entities)) {
       entity.update();
-      if (tick === 10) {
-        console.log(entity.player.x, entity.player.y);
-      }
     }
 
-    // Get player upto speed with server
+    // Update clients key inputs
+    this.playerInput.updateInputState();
+
+    // Reconcile client with server
     this.processServerMessages();
 
     // We cannot process inputs until the server has provided us
@@ -142,26 +142,12 @@ export class GameScene extends Phaser.Scene {
       return; // Not connected yet.
     }
 
-    tick++;
-
     this.processInput();
 
     if (this.entity_interpolation) {
       this.interpolateEntities();
     }
-
-    // console.log("----------------------")
   }
-
-  private inputState() {
-    const left = this.keyboard.left.isDown;
-    const right = this.keyboard.right.isDown;
-    const up = this.keyboard.up.isDown;
-    const down = this.keyboard.down.isDown || tick < 10;
-
-    return { isMoving: left || right || up || down, keysPressed: {left,right,up,down}}
-  }
-
 
   private processInput() {
     // Compute delta time since last update.
@@ -170,37 +156,22 @@ export class GameScene extends Phaser.Scene {
     const dt_sec = (now_ts - last_ts) / 1000.0;
     this.last_ts = now_ts;
 
-    const left = this.keyboard.left.isDown;
-    const right = this.keyboard.right.isDown;
-    const up = this.keyboard.up.isDown;
-    const down = this.keyboard.down.isDown || tick < 10;
-    // const down = this.keyboard.down.isDown;
-    // const down = tick < 10 ? true : false;
-
-    if (!left && !right && !up && !down) {
-      // Nothing interesting happened.
-      this.isKeyPressed = false
-      return;
-    } else {
-      this.isKeyPressed = true
+    if (!this.playerInput.isMoving) {
+      return; // Nothing interesting happened.
     }
 
     // Package player's input.
     let input: ClientInputPacket = {
-      left: left,
-      right: right,
-      up: up,
-      down: down,
+      left: this.playerInput.frameInputState.left,
+      right: this.playerInput.frameInputState.right,
+      up: this.playerInput.frameInputState.up,
+      down: this.playerInput.frameInputState.down,
       press_time: dt_sec,
       input_sequence_number: this.input_sequence_number++,
       entity_id: this.entity_id,
     };
 
-    // console.log("Send input packet ", this.input_sequence_number)
-    // setTimeout(() => {
-
-      this.socket.emit("client_input_packet", input);
-    // }, 300)
+    this.socket.emit("client_input_packet", input);
 
     // Do client-side prediction.
     if (this.client_side_prediction) {
@@ -250,7 +221,7 @@ export class GameScene extends Phaser.Scene {
           `
           ServerX ${state.positionx.toFixed(2)}, ClientX ${entity.player.x.toFixed(2)}
           ServerY ${state.positiony.toFixed(2)} ClientY ${entity.player.y.toFixed(2)}}
-          key down = ${this.isKeyPressed}
+          key down = ${this.playerInput.isMoving}
           `
         , {
             fontSize: '18px',
@@ -261,68 +232,18 @@ export class GameScene extends Phaser.Scene {
         helpText.setScrollFactor(0);
 
 
-        // if (
-        //   diff(entity.player.x, state.positionx) < 1 &&
-        //   diff(entity.player.y, state.positiony) < 1
-        // ) {
-        //   console.log(
-        //     `Server processed input ${state.last_processed_input}`
-        //   );
-        //   console.log(
-        //     `ServerY ${state.positiony} ClientY ${entity.player.y}}`
-        //   );
-
-        // if (state.last_processed_input > this.pending_inputs.length - 5) {
-
-        const { isMoving } = this.inputState()
-
           // calculate the offset between server and client
           const offsetX = entity.player.x - state.positionx
           const offsetY = entity.player.y - state.positiony
 
           // we correct the position faster if the player moves
           // const correction = 20
-          const correction = isMoving ? 20 : 100
+          const correction = this.playerInput.isMoving ? 20 : 100
 
           // apply a step by step correction of the player's position
           entity.player.x -= offsetX / correction
           entity.player.y -= offsetY / correction
-          // this.pending_inputs = []
-        // }
-        // } else {
-        //   console.log(
-        //     `Correcting position for input ${state.last_processed_input}`
-        //   );
-        //   console.log(
-        //     `ServerX ${state.positionx}, ClientX ${entity.player.x} : ServerY ${state.positiony} ClientY ${entity.player.y}}`
-        //   );
 
-        //   entity.player.x = state.positionx;
-        //   entity.player.y = state.positiony;
-        // }
-
-
-        // if (this.server_reconciliation) {
-        //   // Server Reconciliation. Re-apply all the inputs not yet processed by
-        //   // the server.
-        //   var j = 0;
-        //   while (j < this.pending_inputs.length) {
-        //     var input = this.pending_inputs[j];
-        //     if (input.input_sequence_number <= state.last_processed_input) {
-        //       // Already processed. Its effect is already taken into account into the world update
-        //       // we just got, so we can drop it.
-        //       this.pending_inputs.splice(j, 1);
-        //     } else {
-        //       // Not processed by the server yet. Re-apply it.
-        //       console.log("Re-applying ", input);
-        //       entity.applyInput(input);
-        //       j++;
-        //     }
-        //   }
-        // } else {
-        //   // Reconciliation is disabled, so drop all the saved inputs.
-        //   this.pending_inputs = [];
-        // }
       } else {
         // Received the position of an entity other than this client's.
 

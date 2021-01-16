@@ -21,8 +21,8 @@ export class GameServer {
   private port: string | number;
 
   // Connected clients and their entities.
-  clients:{ [key:string]:Entity; } = {};
-  entities: { [key:string]:Entity; } = {};
+  clients: { [key: string]: Entity } = {};
+  entities: { [key: string]: Entity } = {};
 
   // Last processed input for each client.
   last_processed_input: any = {};
@@ -35,10 +35,10 @@ export class GameServer {
 
   constructor(app: express.Application) {
 
-    this.app = app
+    this.app = app;
     this.createServer();
     this.sockets();
-    let game: PhaserGame = newGame(this.io)
+    const game: PhaserGame = newGame(this.io);
 
   }
 
@@ -51,9 +51,9 @@ export class GameServer {
     // this.io = socketIo(this.server, { origins: '*:*' });
     this.io = require("socket.io")(this.server, {
       cors: {
-        origin: '*',
+        origin: "*",
       }
-    })
+    });
 
     this.server.listen(this.port, () => {
       console.log("Running server on port %s, env %s", this.port, this.app.get("env"));

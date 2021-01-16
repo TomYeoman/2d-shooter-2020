@@ -8,6 +8,15 @@ export type ClientInputPacket = {
     entity_id: string;
 }
 
+export type ClientInput = {
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+    rotation: number;
+    mouseDown: false;
+}
+
 export type WorldStateUpdate = {
     entity_id: string;
     positionx: number;
