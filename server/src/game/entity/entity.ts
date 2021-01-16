@@ -16,7 +16,7 @@ export class Entity {
     this.speed = 5000;
 
     const clientFrameRate = 60;
-    const serverFrameRate = 5;
+    const serverFrameRate = 30;
     this.scaler = clientFrameRate / serverFrameRate;
 
     // Object layers in Tiled let you embed extra info into a map - like a spawn point or custom
@@ -24,14 +24,20 @@ export class Entity {
     const spawnPoint: any = map.findObject("Objects", (obj: any) => obj.name === "Spawn Point");
     this.player = scene.physics.add
       .sprite(spawnPoint.x, spawnPoint.y, "atlas", "misa-front")
-      .setSize(30, 40)
-      .setOffset(0, 24);
+      .setSize(30, 40);
+      // .setOffset(0, 24);
 
     this.speed = 5000;
     this.entity_id = entityId;
 
     // Watch the player and worldLayer for collisions, for the duration of the scene:
     scene.physics.add.collider(this.player, worldLayer);
+
+    const r1 = scene.add.rectangle(spawnPoint.x, spawnPoint.y - 100, 148, 148, 0x6666ff);
+    scene.physics.add.existing(r1, true);
+
+    scene.physics.add.collider(this.player, r1);
+
   }
 
   // Apply the total of all inputs from client, for this server frame
@@ -50,15 +56,21 @@ export class Entity {
       this.frameVelocityY += (input.press_time * this.speed);
     }
 
+    console.log("Applying input for frame ", this.player.body.y);
+  }
+
+  public setVelocity() {
     this.player.setVelocityX(this.frameVelocityX / this.scaler);
     this.player.setVelocityY(this.frameVelocityY / this.scaler);
+    console.log(`Setting velocity for frame X${this.frameVelocityX / this.scaler}, Y${this.frameVelocityY / this.scaler}`);
 
   }
 
   public update() {
+
+     logger.info("Resetting velocity");
      this.frameVelocityX = 0;
      this.frameVelocityY = 0;
       this.player.setVelocity(0, 0);
-     logger.info("Resetting velocity");
   }
 }

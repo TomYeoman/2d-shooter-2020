@@ -78,6 +78,13 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update() {
+    console.log("-------");
+    const now_ts = +new Date();
+    const last_ts = this.last_ts || now_ts;
+    const dt_sec = (now_ts - last_ts) / 1000.0;
+    this.last_ts = now_ts;
+    console.log("Frame time", dt_sec);
+
     // Reset all velocity to zero, after frame processed
     for (const [key, entity] of Object.entries(this.entities)) {
       entity.update();
@@ -91,7 +98,7 @@ export default class MainScene extends Phaser.Scene {
 
   private processInputs() {
     const validateInput = (input: ClientInputPacket) => {
-      if (Math.abs(input.press_time) > 1 / 40) {
+      if (Math.abs(input.press_time) > 1 / 30) {
         console.log("Discarding input with time of", input.press_time);
         return false;
       }
@@ -117,6 +124,7 @@ export default class MainScene extends Phaser.Scene {
     // Each client is a socket ID, with an entity attatched
     for (const [key, entity] of Object.entries(this.clients)) {
       info += "Player " + key + ": #" + (this.last_processed_input[entity.entity_id] || 0) + "   ";
+      entity.setVelocity();
     }
 
   }
@@ -136,6 +144,9 @@ export default class MainScene extends Phaser.Scene {
         positiony: entity.player.y,
         last_processed_input: this.last_processed_input[key] || 0
       });
+
+      console.log(entity.player.body.x);
+      console.log(entity.player.body.y);
     }
 
     console.log("Emitting world state", world_state);

@@ -21,7 +21,7 @@ export class Entity {
     this.player = scene.physics.add
       .sprite(x, y, "atlas", "misa-front")
       .setSize(30, 40)
-      .setOffset(0, 24);
+      // .setOffset(0, 24);
 
     if (entityId === ownEntityID) {
       this.player.debugBodyColor = 5
@@ -30,6 +30,11 @@ export class Entity {
       camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
       // Watch the player and worldLayer for collisions, for the duration of the scene:
       scene.physics.add.collider(this.player, worldLayer);
+
+      var r1 = scene.add.rectangle(x, y - 100, 148, 148, 0x6666ff);
+      scene.physics.add.existing(r1, true);
+
+      scene.physics.add.collider(this.player, r1);
     }
 
   }
