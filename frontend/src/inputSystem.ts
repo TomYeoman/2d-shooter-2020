@@ -1,5 +1,5 @@
 import { ArrowKeys, WASDKeys } from "./constants/keybinds";
-import { ClientInput } from "./types";
+import { ClientInput } from "../../common/types/types";
 
 export class InputSystem {
 

@@ -1,0 +1,12 @@
+Building an IO game - things I wish I knew
+
+- Realtime multiplayer is hard - but you will land on your feet
+- Choose a framework that works for you
+- The importance of building a shared folder first - duplicating code for client / server is frustrating and tiresome
+- Make an effort to understand client side prediction, server reconciliation + entity interpolation from the start
+- Read the important guides on multiplayer
+- Study how others are doing it
+- Join a forum - make friends with the regulars
+- DOn't be afraid to just dig in.. you learn the most from mistakes, it can be tempting to re-write agains every cool abstraction you see
+for entity interpolation etc, but try and resist until you're really tidying up
+- there's a LOT of work - get a plan together straight away, see what the 80/20 place looks like , don't get caught in the details in V1

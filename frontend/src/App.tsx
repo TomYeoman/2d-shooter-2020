@@ -1,8 +1,22 @@
 import Phaser from "phaser";
 import io from "socket.io-client";
-import { ClientInputPacket, WorldStateUpdate } from "./types";
-import { Entity } from "./game-objects/entity/entity";
+import {
+  ClientInputPacket,
+  Entities,
+  EntityEnum,
+  WorldStateUpdate,
+  EntityPlayer,
+  EntityWall,
+} from "../../common/types/types";
+import { Player } from "../../common/entities/player";
 import { InputSystem } from "./inputSystem";
+import {
+  phaserGameConfig,
+  serverBroadcastRate,
+  clientFPS,
+} from "../../common/config/phaserConfig";
+import { Wall } from "../../common/entities/wall";
+// import react from "react"
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
   active: false,
@@ -10,41 +24,37 @@ const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
   key: "Game",
 };
 
-const update_rate = 60;
-const server_update_rate = 30;
-let tick: any = 0;
-
 export class GameScene extends Phaser.Scene {
   private socket: SocketIOClient.Socket;
 
-  playerInput: InputSystem
+  playerInput: InputSystem;
 
   // Player
   private entity_id: string;
   private last_ts: number;
   private input_sequence_number = 0;
   private pending_inputs: ClientInputPacket[] = [];
-  private latestWorldUpdate: WorldStateUpdate[] = [];
-  entities: { [key: string]: Entity } = {};
+  private latestWorldUpdate: WorldStateUpdate = [];
+  entities: Entities = {};
   map: Phaser.Tilemaps.Tilemap;
   worldLayer: Phaser.Tilemaps.StaticTilemapLayer;
-  server_reconciliation = true;
+  server_reconciliation = false;
   entity_interpolation = true;
   client_side_prediction = true;
 
-  serverVisualisation: Entity;
+  serverVisualisation: Player;
 
   constructor() {
     super(sceneConfig);
   }
 
   public preload() {
-
     this.load.image("player", "survivor-shotgun.png");
 
     // this.load.image("tiles", "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/tilesets/super-mario-tiles.png");
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
-    this.load.tilemapTiledJSON("map", "first_map.json");
+    this.load.tilemapTiledJSON("map", "demo_map_v1.json");
+    // this.load.tilemapTiledJSON("map", "first_map.json");
     this.load.atlas(
       "atlas",
       "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.png",
@@ -53,7 +63,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   public create() {
-
     this.setupSocketConnection();
 
     this.map = this.make.tilemap({ key: "map" });
@@ -73,31 +82,23 @@ export class GameScene extends Phaser.Scene {
       0
     );
     this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
-    const aboveLayer = this.map.createStaticLayer(
-      "Above Player",
-      tileset,
-      0,
-      0
-    );
+    // const aboveLayer = this.map.createStaticLayer(
+    //   "Above Player",
+    //   tileset,
+    //   0,
+    //   0
+    // );
 
     this.worldLayer.setCollisionByProperty({ collides: true });
 
     // By default, everything gets depth sorted on the screen in the order we created things. Here, we
     // want the "Above Player" layer to sit on top of the player, so we explicitly give it a depth.
     // Higher depths will sit on top of lower depth objects.
-    aboveLayer.setDepth(10);
+    // aboveLayer.setDepth(10);
 
-    this.playerInput = new InputSystem(this)
+    this.playerInput = new InputSystem(this);
 
-    this.serverVisualisation = new Entity(
-      this,
-      "100",
-      this.entity_id,
-      this.map,
-      this.worldLayer,
-      0,
-      0
-    );
+    this.serverVisualisation = new Player(this, this.worldLayer, "100", 0, 0, "player", this.entities);
   }
 
   public setupSocketConnection() {
@@ -113,19 +114,20 @@ export class GameScene extends Phaser.Scene {
       this.entity_id = data.entity_id;
     });
 
-    this.socket.on(
-      "server_world_state_update",
-      (update: WorldStateUpdate[]) => {
-        this.latestWorldUpdate = update;
-      }
-    );
+    this.socket.on("server_world_state_update", (update: WorldStateUpdate) => {
+      this.latestWorldUpdate = update;
+    });
   }
 
   public update() {
-
     // Reset all velocity to zero, after frame processed
     for (const [key, entity] of Object.entries(this.entities)) {
-      entity.update();
+      if (entity instanceof Player) {
+        entity.resetVelocity();
+      } else {
+        // No behaviour for handling inputs recieved against any other entitys for now
+        entity.updateClient()
+      }
     }
 
     // Update clients key inputs
@@ -175,11 +177,75 @@ export class GameScene extends Phaser.Scene {
 
     // Do client-side prediction.
     if (this.client_side_prediction) {
-      this.entities[this.entity_id].applyInput(input);
+      let clientEntity = this.entities[this.entity_id];
+      if (clientEntity instanceof Player) {
+        clientEntity.applyInput(input);
+        clientEntity.setVelocity();
+      } else {
+        // No behaviour for handling inputs recieved against any other entitys for now
+      }
     }
 
     // Save this input for later reconciliation.
-    this.pending_inputs.push(input);
+    // this.pending_inputs.push(input);
+  }
+
+  private printDebug(state: any, entity: any) {
+    const helpText = this.add.text(
+      16,
+      16,
+      `
+      ServerX ${state.x.toFixed(2)}, ClientX ${entity.sprite.x.toFixed(
+        2
+      )}
+      ServerY ${state.y.toFixed(2)} ClientY ${entity.sprite.y.toFixed(
+        2
+      )}}
+      key down = ${this.playerInput.isMoving}
+      `,
+      {
+        fontSize: "18px",
+        padding: { x: 10, y: 5 },
+        backgroundColor: "#000000",
+        fill: "#ffffff",
+      }
+    );
+    helpText.setScrollFactor(0);
+  }
+
+  private buildInitialEntity(state: EntityPlayer | EntityWall) {
+
+    let entity: Player | Wall;
+
+    if (state.type === EntityEnum.PLAYER) {
+      entity = new Player(
+        this,
+        this.worldLayer,
+        state.entity_id,
+        state.x,
+        state.y,
+        "player",
+        this.entities
+      );
+
+      // If this entity was my own character - attatch camera
+      if (entity.entity_id === this.entity_id) {
+        entity.sprite.debugBodyColor = 1;
+
+        const camera = this.cameras.main;
+        camera.startFollow(entity.sprite);
+        camera.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        // Watch the player and worldLayer for collisions, for the duration of the scene:
+        this.physics.add.collider(entity.sprite, this.worldLayer);
+      }
+
+    } else {
+      entity = new Wall(this, this.entities, state.x, state.y);
+      console.log(entity)
+    }
+
+    this.entities[state.entity_id] = entity;
   }
 
   private processServerMessages = () => {
@@ -189,76 +255,48 @@ export class GameScene extends Phaser.Scene {
 
     // World state is a list of entity states.
     for (var i = 0; i < this.latestWorldUpdate.length; i++) {
-      let state = this.latestWorldUpdate[i];
+      let latestServerState = this.latestWorldUpdate[i];
 
       // If this is the first time we see this entity, create a local representation.
-      if (!this.entities[state.entity_id]) {
-        let entity = new Entity(
-          this,
-          state.entity_id,
-          this.entity_id,
-          this.map,
-          this.worldLayer,
-          state.positionx,
-          state.positiony
-        );
-        this.entities[state.entity_id] = entity;
+      if (!this.entities[latestServerState.entity_id]) {
+        this.buildInitialEntity(latestServerState);
       }
 
-      let entity = this.entities[state.entity_id];
+      let entity = this.entities[latestServerState.entity_id]
 
-      if (state.entity_id === this.entity_id) {
-        const diff = (oldNumber: number, newNumber: number) => {
-          var decreaseValue = oldNumber - newNumber;
+      // Must be the server updating, containing clients information
+      if (latestServerState.entity_id === this.entity_id) {
 
-          return Math.abs((decreaseValue / oldNumber) * 100);
-        };
+        this.serverVisualisation.sprite.x = latestServerState.x;
+        this.serverVisualisation.sprite.y = latestServerState.y;
 
-        this.serverVisualisation.player.x = state.positionx;
-        this.serverVisualisation.player.y = state.positiony;
+        this.printDebug(latestServerState, entity);
+        // calculate the offset between server and client
+        const offsetX = entity.sprite.x - latestServerState.x;
+        const offsetY = entity.sprite.y - latestServerState.y;
 
-        const helpText = this.add.text(16, 16,
-          `
-          ServerX ${state.positionx.toFixed(2)}, ClientX ${entity.player.x.toFixed(2)}
-          ServerY ${state.positiony.toFixed(2)} ClientY ${entity.player.y.toFixed(2)}}
-          key down = ${this.playerInput.isMoving}
-          `
-        , {
-            fontSize: '18px',
-            padding: { x: 10, y: 5 },
-            backgroundColor: '#000000',
-            fill: '#ffffff'
-        });
-        helpText.setScrollFactor(0);
+        // we correct the position faster if the player moves
+        // const correction = 20
+        const correction = this.playerInput.isMoving ? 20 : 100;
 
-
-          // calculate the offset between server and client
-          const offsetX = entity.player.x - state.positionx
-          const offsetY = entity.player.y - state.positiony
-
-          // we correct the position faster if the player moves
-          // const correction = 20
-          const correction = this.playerInput.isMoving ? 20 : 100
-
-          // apply a step by step correction of the player's position
-          entity.player.x -= offsetX / correction
-          entity.player.y -= offsetY / correction
-
+        // apply a step by step correction of the player's position
+        entity.sprite.x -= offsetX / correction;
+        entity.sprite.y -= offsetY / correction;
       } else {
         // Received the position of an entity other than this client's.
 
         if (!this.entity_interpolation) {
           // Entity interpolation is disabled - just accept the server's position.
-          entity.player.x = state.positionx;
-          entity.player.y = state.positiony;
+          entity.sprite.x = latestServerState.x;
+          entity.sprite.y = latestServerState.y;
         } else {
           // Add it to the position buffer.
           var timestamp = +new Date();
           // TODO - Come back to this
           entity.position_buffer.push([
             timestamp,
-            state.positionx,
-            state.positiony,
+            latestServerState.x,
+            latestServerState.y,
           ]);
         }
       }
@@ -270,7 +308,7 @@ export class GameScene extends Phaser.Scene {
   interpolateEntities = () => {
     // Compute render timestamp.
     var now = +new Date();
-    var render_timestamp = now - 1000.0 / server_update_rate;
+    var render_timestamp = now - 1000.0 / serverBroadcastRate;
 
     for (var i in this.entities) {
       var entity = this.entities[i];
@@ -280,10 +318,11 @@ export class GameScene extends Phaser.Scene {
         continue;
       }
 
-      // Find the two authoritative positions surrounding the rendering timestamp.
-      var buffer = entity.position_buffer;
+      const buffer = entity.position_buffer;
 
+      // Find the two authoritative positions surrounding the rendering timestamp.
       // Drop older positions.
+
       while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
         buffer.shift();
       }
@@ -303,32 +342,32 @@ export class GameScene extends Phaser.Scene {
         var y0 = buffer[0][2];
         var y1 = buffer[1][2];
 
-        entity.player.x =
+
+        // entity.sprite.body.x = entity.sprite.x
+        // entity.sprite.body.y = entity.sprite.y
+        entity.sprite.setVelocity(0)
+
+        entity.sprite.x =
           x0 + ((x1 - x0) * (render_timestamp - t0)) / (t1 - t0);
-        entity.player.y =
+        entity.sprite.y =
           y0 + ((y1 - y0) * (render_timestamp - t0)) / (t1 - t0);
+
+        entity.sprite.setVelocity(0)
+
+
       }
     }
   };
 }
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
-  title: "Game",
+  ...phaserGameConfig,
   type: Phaser.AUTO,
-  width: 1280,
-  height: 720,
-  physics: {
-    default: "arcade",
-    arcade: {
-      debug: true,
-    },
-  },
   fps: {
-    target: update_rate,
+    target: clientFPS,
     forceSetTimeOut: true,
   },
   parent: "game-here",
-  backgroundColor: "#000",
   scene: GameScene,
 };
 

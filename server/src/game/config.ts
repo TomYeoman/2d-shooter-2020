@@ -2,29 +2,19 @@ require("@geckos.io/phaser-on-nodejs");
 import Phaser from "phaser";
 import MainScene from "./scene";
 
-// set the fps you need
-const FPS = 30;
 // @ts-ignore
-global.phaserOnNodeFPS = FPS; // default is 60
+import {phaserGameConfig, serverFPS} from "../../../common/config/phaserConfig";
+global.phaserOnNodeFPS = serverFPS; // default is 60
 
 // prepare the config for Phaser
 const config = {
-  title: "Game",
+  ...phaserGameConfig,
   type: Phaser.HEADLESS,
-  width: 1280,
-  height: 720,
-  // banner: false,
   audio: false,
   scene: [MainScene],
   fps: {
-    target: FPS,
+    target: serverFPS,
     forceSetTimeOut: true,
-  },
-  physics: {
-    default: "arcade",
-    // arcade: {
-    //   debug: true,
-    // },
   }
 };
 

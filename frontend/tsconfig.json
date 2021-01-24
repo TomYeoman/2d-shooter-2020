@@ -23,6 +23,7 @@
     "strictPropertyInitialization": false,
   },
   "include": [
-    "src"
+    "src",
+    "../common/**/*",
   ]
 }
