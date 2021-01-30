@@ -111,7 +111,7 @@ export class GameScene extends Phaser.Scene {
 
     this.socket.on("player_info", (data: any) => {
       console.log(data);
-      this.entity_id = data.entity_id;
+      this.entity_id = data;
     });
 
     this.socket.on("server_world_state_update", (update: WorldStateUpdate) => {
@@ -120,15 +120,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   public update() {
-    // Reset all velocity to zero, after frame processed
-    for (const [key, entity] of Object.entries(this.entities)) {
-      if (entity instanceof Player) {
-        entity.resetVelocity();
-      } else {
-        // No behaviour for handling inputs recieved against any other entitys for now
-        entity.updateClient()
-      }
+
+    // TODO - have a nice way to just test self against collissions?
+
+    // Check if client is colliding with anything to CSP it
+    const ownEntity = this.entities[this.entity_id]
+    if (ownEntity && ownEntity instanceof Player) {
+      ownEntity.processMove(this.entities)
     }
+    // for (const [key, entity] of Object.entries(this.entities)) {
+    //   if (entity.entity_id === this.entity_id && entity instanceof Player) {
+    //     entity.processMove(this.entities)
+    //   }
+    // }
 
     // Update clients key inputs
     this.playerInput.updateInputState();
@@ -173,7 +177,12 @@ export class GameScene extends Phaser.Scene {
       entity_id: this.entity_id,
     };
 
-    this.socket.emit("client_input_packet", input);
+    // setTimeout(() => {
+
+      this.socket.emit("client_input_packet", input);
+    // }, 300)
+
+    // console.log("sending input", input)
 
     // Do client-side prediction.
     if (this.client_side_prediction) {
@@ -187,7 +196,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Save this input for later reconciliation.
-    // this.pending_inputs.push(input);
+    this.pending_inputs.push(input);
   }
 
   private printDebug(state: any, entity: any) {
@@ -262,7 +271,8 @@ export class GameScene extends Phaser.Scene {
         this.buildInitialEntity(latestServerState);
       }
 
-      let entity = this.entities[latestServerState.entity_id]
+
+      let entity = this.entities[latestServerState.entity_id] as Player
 
       // Must be the server updating, containing clients information
       if (latestServerState.entity_id === this.entity_id) {
@@ -271,17 +281,41 @@ export class GameScene extends Phaser.Scene {
         this.serverVisualisation.sprite.y = latestServerState.y;
 
         this.printDebug(latestServerState, entity);
-        // calculate the offset between server and client
-        const offsetX = entity.sprite.x - latestServerState.x;
-        const offsetY = entity.sprite.y - latestServerState.y;
 
-        // we correct the position faster if the player moves
-        // const correction = 20
-        const correction = this.playerInput.isMoving ? 20 : 100;
+        // // calculate the offset between server and client
+        // const offsetX = entity.sprite.x - latestServerState.x;
+        // const offsetY = entity.sprite.y - latestServerState.y;
 
-        // apply a step by step correction of the player's position
-        entity.sprite.x -= offsetX / correction;
-        entity.sprite.y -= offsetY / correction;
+        // // we correct the position faster if the player moves
+        // // const correction = 20
+        // const correction = this.playerInput.isMoving ? 20 : 100;
+
+        // // apply a step by step correction of the player's position
+        // entity.sprite.x -= offsetX / correction;
+        // entity.sprite.y -= offsetY / correction;
+
+        if (this.server_reconciliation) {
+          // Server Reconciliation. Re-apply all the inputs not yet processed by
+          // the server.
+          var j = 0;
+          while (j < this.pending_inputs.length) {
+            var input = this.pending_inputs[j];
+            if (input.input_sequence_number <= latestServerState.last_processed_input) {
+              // Already processed. Its effect is already taken into account into the world update
+              // we just got, so we can drop it.
+              this.pending_inputs.splice(j, 1);
+            } else {
+              // Not processed by the server yet. Re-apply it.
+              console.log("Re-applying ", input);
+              entity.applyInput(input);
+              j++;
+            }
+          }
+        } else {
+          // Reconciliation is disabled, so drop all the saved inputs.
+          this.pending_inputs = [];
+        }
+
       } else {
         // Received the position of an entity other than this client's.
 
@@ -345,14 +379,14 @@ export class GameScene extends Phaser.Scene {
 
         // entity.sprite.body.x = entity.sprite.x
         // entity.sprite.body.y = entity.sprite.y
-        entity.sprite.setVelocity(0)
+        // entity.sprite.setVelocity(0)
 
         entity.sprite.x =
           x0 + ((x1 - x0) * (render_timestamp - t0)) / (t1 - t0);
         entity.sprite.y =
           y0 + ((y1 - y0) * (render_timestamp - t0)) / (t1 - t0);
 
-        entity.sprite.setVelocity(0)
+        // entity.sprite.setVelocity(0)
 
 
       }

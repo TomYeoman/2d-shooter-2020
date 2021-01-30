@@ -99,9 +99,9 @@ export default class MainScene extends Phaser.Scene {
       } else {
         // Reset all velocity to zero, after frame processed
         entity.resetVelocity();
-        if (entity.playerType === "bot") {
-          entity.generateBotMovement();
-        }
+        // if (entity.playerType === "bot") {
+        //   entity.generateBotMovement();
+        // }
       }
     }
 
@@ -145,7 +145,7 @@ export default class MainScene extends Phaser.Scene {
     // Each client is a socket ID, with an entity attatched
     for (const [key, entity] of Object.entries(this.clients)) {
       info += "Player " + key + ": #" + (this.last_processed_input[entity.entity_id] || 0) + "   ";
-      entity.setVelocity();
+      // entity.setVelocity();
     }
 
   }
@@ -177,6 +177,8 @@ export default class MainScene extends Phaser.Scene {
                 type: entity.type,
                 x: entity.sprite.x,
                 y: entity.sprite.y,
+                last_processed_input: this.last_processed_input[key] || 0
+
               });
             break;
         default:
@@ -211,7 +213,7 @@ export default class MainScene extends Phaser.Scene {
       // an entity ID, so they can send with their input packets
       // TODO - Validate the entity, is the client who owns it when sending position update
       this.clients[socket.id] = entity;
-      this.io.to(socket.id).emit("player_info", this.clients[socket.id]);
+      this.io.to(socket.id).emit("player_info", this.clients[socket.id].entity_id);
 
       socket.on("client_input_packet", (packet: ClientInputPacket) => {
         this.clientPacketsToProcess.push(packet);
@@ -239,12 +241,12 @@ export default class MainScene extends Phaser.Scene {
       setTimeout(() => {
         this.entities[1] = new Wall(this, this.entities, 200, 200);
       }, 100);
-      setTimeout(() => {
-        for (let i = 0;i<10; i++) {
-          const entity = new Player(this, this.worldLayer, uuidv4(),  getRandomInt(1, 500), getRandomInt(1, 500), "bot", this.entities);
-          this.entities[entity.entity_id] = entity;
-        }
-      }, 100);
+      // setTimeout(() => {
+      //   for (let i = 0;i<10; i++) {
+      //     const entity = new Player(this, this.worldLayer, uuidv4(),  getRandomInt(1, 500), getRandomInt(1, 500), "bot", this.entities);
+      //     this.entities[entity.entity_id] = entity;
+      //   }
+      // }, 100);
 
     });
   }

@@ -35,7 +35,8 @@ export type EntityWall = {
     entity_id: string,
     type: EntityEnum.WALL,
     x: number,
-    y: number
+    y: number,
+    last_processed_input: number
 }
 
 export type WorldStateUpdate = (EntityPlayer | EntityWall)[]

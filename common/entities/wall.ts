@@ -20,19 +20,28 @@ export class Wall {
 
         // Collide with every other entity - optimise any only add player as collision?
 
+        // this.sprite.setImmovable(true)
         for (const [key, entity] of Object.entries(entities)) {
-            scene.physics.add.collider(this.sprite, entity.sprite);
+            scene.physics.add.overlap(this.sprite, entity.sprite, (ob1) => {
+                // debugger
+                // console.log(ob1.body.overlapX)
+                // console.log(ob1.body.overlapY)
+                // console.log(ob2.body.overlapX)
+                // console.log(ob2.body.overlapY)
+            });
         }
 
         console.log(entities)
 
         // this.sprite.setVelocityX(100)
 
+        // this.sprite.setVelocityX(100)
 
     }
 
     update() {
-        this.sprite.setVelocityX(100)
+        this.sprite.x += 1
+        // this.sprite.setVelocityX(100)
 
         // this.sprite.setVelocityX(100)
         // console.log(this.sprite.body.position.x)
@@ -44,7 +53,8 @@ export class Wall {
 
     }
     updateClient() {
-        this.sprite.setVelocity(1)
+        // this.sprite.setVelocity(1)
+        // this.sprite.setVelocityX(100)
 
         // this.sprite.setVelocityX(100)
         // console.log(this.sprite.body.position.x)
