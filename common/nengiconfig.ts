@@ -1,12 +1,15 @@
 import nengi from 'nengi'
-import Identity from './Identity'
-import NetLog from './NetLog'
+import Identity from './message/Identity'
+import NetLog from './message/NetLog'
+import LobbyStateMessage from './message/LobbyStateMessage'
 import PlayerCharacter from './entity/PlayerCharacter'
 // import PlayerCharacter from './PlayerCharacter.js'
 // import Asteroid from './Asteroid.js'
 // import PlayerInput from './PlayerInput.js'
 // import Identity from './Identity.js'
 import MoveCommand from './command/MoveCommand'
+import RequestJoinGame from './command/RequestJoinGame'
+import {commandTypes, messageTypes} from './types/types'
 
 const config:any = {
     UPDATE_RATE: 30,
@@ -28,11 +31,13 @@ const config:any = {
         localMessages: [],
         messages: [
             ['NetLog', NetLog],
-            ['Identity', Identity]
+            [messageTypes.IDENTITY, Identity],
+            [messageTypes.LOBBY_STATE_MESSAGE, LobbyStateMessage]
         ],
         commands: [
             // ['PlayerInput', PlayerInput]
             ['MoveCommand', MoveCommand],
+            [commandTypes.REQUEST_JOIN_GAME, RequestJoinGame],
         ],
         basics: []
     }

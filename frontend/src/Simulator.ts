@@ -4,6 +4,8 @@ import InputSystem from "./InputSystem"
 import MoveCommand from '../../common/command/MoveCommand'
 import nengi from 'nengi'
 import PhaserEntityRenderer from './PhaserEntityRenderer'
+import { lobbyState, messageTypes } from '../../common/types/types'
+import LobbyStateMessage from '../../common/message/LobbyStateMessage'
 
 class Simulator {
 
@@ -11,10 +13,11 @@ class Simulator {
     input: InputSystem
     entities: Map<string, any>
     renderer: PhaserEntityRenderer
+
     entityIdSelf : number
     myEntity : PlayerCharacter | null
 
-    constructor(client: nengi.Client, phaserInstance: Phaser.Scene) {
+    constructor(client: nengi.Client, phaserInstance: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
         this.client = client
         this.input = new InputSystem()
         this.entities = new Map()
@@ -23,15 +26,14 @@ class Simulator {
 
 
         this.myEntity = null
-        this.renderer = new PhaserEntityRenderer(phaserInstance)
-
+        this.renderer = new PhaserEntityRenderer(phaserInstance, sceneMap)
     }
 
     createEntity(entity: any) {
         console.log('creating entity', entity)
 
         if (entity.protocol.name === 'PlayerCharacter') {
-            let newEntity = new PlayerCharacter()
+            let newEntity = new PlayerCharacter(entity.x, entity.y)
             Object.assign(newEntity, entity)
             this.entities.set(newEntity.nid, newEntity)
             this.renderer.createEntity(entity)
@@ -56,7 +58,20 @@ class Simulator {
     }
 
     processMessage(message: any) {
-        if (message.protocol.name === 'Identity') {
+
+        if (message.protocol.name === messageTypes.LOBBY_STATE_MESSAGE) {
+            const lobbyMessage: LobbyStateMessage = message
+
+            console.log("Recieved update on lobby state")
+
+
+            if (lobbyMessage.state === lobbyState.WAITING_FOR_PLAYERS) {
+                this.renderer.displayText(`Waiting for players, currently ${lobbyMessage.playerCount} / ${lobbyMessage.lobbyMinimum}` )
+            }
+
+        }
+
+        if (message.protocol.name === messageTypes.IDENTITY) {
             // be able to access self from simular
             console.log('identified as', message)
             this.entityIdSelf = message.entityId
@@ -90,10 +105,10 @@ class Simulator {
 
             // console.log(dx)
             // console.log(dy)
-            // debugger
             rotation = Math.atan2(dy, dx)
 
             // console.log(rotation)
+
             const moveCommand = new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta)
             this.client.addCommand(moveCommand)
         }

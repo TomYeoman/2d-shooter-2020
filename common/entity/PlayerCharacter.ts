@@ -16,14 +16,16 @@ class PlayerCharacter {
     // Automatically assigned when added to nengi
     nid: string
     ntype: string
+
+    // Added ourself, not sent over wire?
     client: any
 
-    constructor() {
-        this.x = 0
-        this.y = 0
+    constructor(x:number, y:number ) {
+        this.x = x;
+        this.y = y
         this.rotation = 0
         this.hitpoints = 100
-        this.isAlive = true
+        this.isAlive = false
 
         this.moveDirection = {
             x: 0,

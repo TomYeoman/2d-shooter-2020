@@ -1,8 +1,11 @@
 import nengi from "nengi";
 import Phaser from "phaser";
 import nengiConfig from "../../../common/nengiconfig";
-import { ExtendedNengiTypes } from "../../../common/custom-nengi-types";
+import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Simulator from "../Simulator";
+import RequestJoinGame from '../../../common/command/RequestJoinGame'
+import { lobbyState } from "../../../common/types/types";
+import LobbyStateMessage from "../../../common/message/LobbyStateMessage";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
   active: false,
@@ -18,15 +21,14 @@ export class MainScene extends Phaser.Scene {
   last_ts: number
 
   state: {
-    /* clientside state can go here */
     myId: number | null;
     myEntity: string | null;
+    // lobbyState: LobbyStateMessage
   };
 
   constructor() {
     super(sceneConfig);
     this.state = {
-      /* clientside state can go here */
       myId: null,
       myEntity: null,
     };
@@ -41,28 +43,18 @@ export class MainScene extends Phaser.Scene {
   public preload() {
     this.load.image("player", "survivor-shotgun.png");
 
-    // this.load.image("tiles", "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/tilesets/super-mario-tiles.png");
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
-    this.load.tilemapTiledJSON("map", "demo_map_v1.json");
-    // this.load.tilemapTiledJSON("map", "first_map.json");
-    this.load.atlas(
-      "atlas",
-      "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.png",
-      "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.json"
-    );
+    this.load.tilemapTiledJSON("map", "spawn_island.json");
   }
 
   public create() {
     this.map = this.make.tilemap({ key: "map" });
 
-    // Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
-    // Phaser's cache (i.e. the name you used in preload)
     const tileset = this.map.addTilesetImage(
       "tuxmon-sample-32px-extruded",
       "tiles"
     );
 
-    // Parameters: layer name (or index) from Tiled, tileset, x, y
     const belowLayer = this.map.createStaticLayer(
       "Below Player",
       tileset,
@@ -74,7 +66,7 @@ export class MainScene extends Phaser.Scene {
 
     // ------------ NENGI ------------------//
 
-    this.simulator = new Simulator(this.nengiClient, this);
+    this.simulator = new Simulator(this.nengiClient, this, this.map);
 
     this.nengiClient.onConnect((res) => {
       console.log("onConnect response:", res);
@@ -92,6 +84,18 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.nengiClient.connect("ws://localhost:8079");
+
+    // console.log("Requesting to join game in 5 seconds")
+
+    console.log("Requesting to join game")
+    const RequestJoinGameCommand = new RequestJoinGame("")
+    this.nengiClient.addCommand(RequestJoinGameCommand)
+
+    // setTimeout(() => {
+    //   const RequestJoinGameCommand = new RequestJoinGame("")
+    //   this.nengiClient.addCommand(RequestJoinGameCommand)
+    // }, 5000)
+
   }
 
   public update() {

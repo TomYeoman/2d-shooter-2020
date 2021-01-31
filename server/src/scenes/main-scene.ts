@@ -2,12 +2,14 @@
 import Phaser from "phaser";
 const path = require("path");
 import nengi from 'nengi'
-import { ExtendedNengiTypes } from "../../../common/custom-nengi-types";
-import NetLog from "../../../common/NetLog";
+import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
+import NetLog from "../../../common/message/NetLog";
 import PlayerCharacter from "../../../common/entity/PlayerCharacter";
-import Identity from "../../../common/Identity";
+import Identity from "../../../common/message/Identity";
 import nengiConfig from '../../../common/nengiconfig'
 import { update } from "lodash";
+import { LobbyManager } from "../game/LobbyManager";
+import { commandTypes, messageTypes } from "../../../common/types/types";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -20,11 +22,12 @@ export default class MainScene extends Phaser.Scene {
 
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
     map: Phaser.Tilemaps.Tilemap
+    lobby: LobbyManager
 
     preload() {
 
         const imgPath = path.join(__dirname, "..", "assets", "tuxmon-sample-32px-extruded.png");
-        const mapPath = path.join(__dirname, "..", "assets", "demo_map_v1.json");
+        const mapPath = path.join(__dirname, "..", "assets", "spawn_island.json");
         // const mapPath = path.join(__dirname, "..", "assets", "first_map.json");
 
         this.load.image("tiles", imgPath);
@@ -50,6 +53,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
+
         console.log("Running create");
         // this.listen();
 
@@ -63,75 +67,36 @@ export default class MainScene extends Phaser.Scene {
         // Parameters: layer name (or index) from Tiled, tileset, x, y
         const belowLayer = this.map.createStaticLayer("Below Player", tileset, 0, 0);
         this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
-
         this.worldLayer.setCollisionByProperty({ collides: true });
+
 
         // Nengi - Perhaps extract?
         this.nengiInstance.onConnect((client, data, callback) => {
-
-            // make the raw entity only visible to this client
-            // const entitySelf = new PlayerCharacter()
-            // const channel = this.nengiInstance.createChannel()
-            // channel.subscribe(client)
-            // channel.addEntity(entitySelf)
-            // client.channel = channel
-
-            const entitySelf = new PlayerCharacter()
-            this.nengiInstance.addEntity(entitySelf)
-
-
-            // tell the client which entities it controls
-            this.nengiInstance.message(new Identity(entitySelf.nid), client)
-
-            // establish a relation between this entity and the client
-            entitySelf.client = client
-            client.entitySelf = entitySelf
-
-            client.positions = []
-
-            // define the view (the area of the game visible to this client, all else is culled)
-            client.view = {
-                x: entitySelf.x,
-                y: entitySelf.y,
-                halfWidth: 99999,
-                halfHeight: 99999
-            }
-
             callback({ accepted: true, text: 'Welcome!' })
-
         })
 
         this.nengiInstance.onDisconnect(client => {
             this.nengiInstance.emit('disconnect', client)
         })
 
-        // this.nengiInstance.emitCommands = () => {
-        //     let cmd = null
-        //     while (cmd = this.nengiInstance.getNextCommand()) {
-        //         const tick = cmd.tick
-        //         const client = cmd.client
-
-        //         for (let i = 0; i < cmd.commands.length; i++) {
-        //             const command = cmd.commands[i]
-        //             this.nengiInstance.emit(`command::${command.protocol.name}`, { command, client, tick })
-        //         }
-        //     }
-        // }
-
-
         this.nengiInstance.on('disconnect', client => {
-            // this.entities.delete(client.entitySelf.nid)
-
-            this.nengiInstance.removeEntity(client.entitySelf)
-            // client.channel.destroy()
-
+            // If we're tracking an entity for the disconnected player
+            // then remove it
+            if (client.entitySelf) {
+                console.log("Player disconnected, deleting entity ", client.entitySelf.nid)
+                this.nengiInstance.removeEntity(client.entitySelf)
+            } else {
+                console.log("Player disconnected, but had no entity to clear up")
+            }
         })
 
+        // Create a single lobby for now
+        this.lobby = new LobbyManager(this.nengiInstance, this.map)
 
+        // Handle client inputs / sending game state every 20 ticks (default), versus physics phaser running @ closer to 60 FPS (default)
         setInterval(() => {
             this.handleInputs()
         }, 1000 / nengiConfig.UPDATE_RATE);
-
     }
 
     // Phaser event tick - use for physics etc
@@ -150,20 +115,17 @@ export default class MainScene extends Phaser.Scene {
 
             for (let i = 0; i < cmd.commands.length; i++) {
                 const command = cmd.commands[i]
-                const entitySelf = client.entitySelf
 
-                if (command.protocol.name === 'MoveCommand') {
-                    entitySelf.processMove(command)
-
+                if (command.protocol.name === commandTypes.REQUEST_JOIN_GAME) {
+                    console.log("Trying to process request game")
+                    this.lobby.connectClient(command, client)
+                } else {
+                    console.log("Trying to process move")
+                    this.lobby.processClientCommand(command,client)
                 }
             }
 
         }
-
-        this.nengiInstance.clients.forEach(client => {
-            client.view.x = client.entitySelf.x
-            client.view.y = client.entitySelf.y
-        })
 
         this.nengiInstance.update()
     }

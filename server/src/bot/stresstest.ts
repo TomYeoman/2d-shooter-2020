@@ -1,7 +1,6 @@
 import nengi from 'nengi'
 import nengiConfig from '../../../common/nengiconfig'
 import MoveCommand from '../../../common/command/MoveCommand'
-import { ExtendedNengiTypes } from "../../../common/custom-nengi-types";
 
 const nengiClient:any = nengi
 
