@@ -13,6 +13,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/socket.io-client": "^1.4.34",
     "common": "file:../common",
+    "nengi": "^1.18.0",
     "phaser": "^3.24.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

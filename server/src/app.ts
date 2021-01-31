@@ -10,7 +10,7 @@ const app = express();
 import logger from "./util/logger";
 
 // Configure CORS for this service so our UI can make calls to us.
-app.set("port", PORT || 3000);
+app.set("port", PORT || 4000);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

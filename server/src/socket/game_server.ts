@@ -1,6 +1,8 @@
 import express from "express";
 import * as http from "http";
-import { newGame, PhaserGame } from "../game/game";
+import { newGame } from "../game/main";
+import nengi from 'nengi'
+import nengiConfig from '../../../common/nengiconfig'
 
 export class GameServer {
 
@@ -10,13 +12,16 @@ export class GameServer {
   private server: http.Server;
   private io: SocketIO.Server;
   private port: string | number;
+  private nengiInstance: any
 
   constructor(app: express.Application) {
 
     this.app = app;
     this.createServer();
     this.sockets();
-    const game: PhaserGame = newGame(this.io);
+    this.nengiInstance = new nengi.Instance(nengiConfig, { port: 8079 })
+
+    newGame(this.nengiInstance);
 
   }
 
