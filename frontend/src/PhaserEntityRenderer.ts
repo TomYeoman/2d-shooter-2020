@@ -1,6 +1,7 @@
 
 import {PlayerGraphic} from '../../common/graphics/PlayerGraphic'
 import { messageTypes } from '../../common/types/types'
+import { SCENE_NAMES } from './game/index'
 
 class PhaserEntityRenderer {
 
@@ -85,6 +86,18 @@ class PhaserEntityRenderer {
         // const mod = Phaser.Math.FloorTo(((value * 100) % 3) + 1, 0);
         // const text = `Loading${".".repeat(mod)}${mod <= 2 ? " ".repeat(3 - mod) : ""}`;
 
+    }
+
+    loadLevel(scene: string) {
+
+        if (!Object.values(SCENE_NAMES).includes(scene as SCENE_NAMES)) {
+            debugger
+            console.warn("Unable to find scene ", scene)
+        } else {
+            let sceneName = scene as SCENE_NAMES
+            this.scene.scene.sleep(SCENE_NAMES.MAIN)
+            this.scene.scene.run(SCENE_NAMES[sceneName], { data: true })
+        }
     }
 
 }

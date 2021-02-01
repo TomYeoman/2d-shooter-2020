@@ -13,7 +13,7 @@ class LobbyStateMessage {
         this.gameMode = gameMode
         this.scene = scene
         this.playerCount = playerCount
-        this.lobbyMinimum = 10
+        this.lobbyMinimum = lobbyMinimum
     }
 }
 

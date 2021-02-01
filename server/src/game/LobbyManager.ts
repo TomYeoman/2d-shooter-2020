@@ -1,4 +1,5 @@
 import nengi from "nengi"
+import { SCENE_NAMES } from "../../../frontend/src/game/index"
 import RequestJoinGame from "../../../common/command/RequestJoinGame"
 import PlayerCharacter from "../../../common/entity/PlayerCharacter"
 import Identity from "../../../common/message/Identity"
@@ -13,7 +14,7 @@ export class LobbyManager {
     timeRemaining: number = -1
     state: lobbyState
     sceneMap: Phaser.Tilemaps.Tilemap
-    lobbyMinimum: 3
+    lobbyMinimum: number = 2
 
     constructor(nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap) {
         this.nengiInstance = nengiInstance
@@ -33,45 +34,33 @@ export class LobbyManager {
         const playerCount = this.nengiInstance.clients.toArray().length
         const spawnPoint: any = this.sceneMap.findObject("Objects", (obj: any) => obj.name === "Spawn Point");
 
-        console.log(`Checking whether game is ready to start with ${playerCount} players`)
+        console.log(`Checking whether game is ready to start with ${playerCount} players, and ${this.lobbyMinimum} minimum`)
 
 
         if (playerCount >= this.lobbyMinimum) {
+            console.log(`Beginning game`)
 
             // Choose scene (would be dynamic in future)
-            this.scene = "demo-game"
+            this.scene = SCENE_NAMES.LEVEL_ONE
 
             // Broadcast game start, and scene change to all clients
             this.state = lobbyState.IN_PROGRESS
-            this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
 
             // Create player for each client and tell them it
             this.nengiInstance.clients.forEach(client => {
-                console.log(`Beginning game`)
 
-                // const entitySelf = new PlayerCharacter()
-                // this.nengiInstance.addEntity(entitySelf)
+                console.log("Sending message to client")
+                this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
 
-                // // tell the client which entities it controls
-                // this.nengiInstance.message(new Identity(entitySelf.nid), client)
 
-                // // establish a relation between this entity and the client
-                // entitySelf.client = client
-                // client.entitySelf = entitySelf
-                // client.name = command.name
-                // client.positions = []
-
-                // // define the view (the area of the game visible to this client, all else is culled)
-                // client.view = {
-                //     x: entitySelf.x,
-                //     y: entitySelf.y,
-                //     halfWidth: 99999,
-                //     halfHeight: 99999
-                // }
+                // Now all clients have moved to new scene, change scene on server
+                // TODO - Maybe add a timer here?
             })
 
 
         } else {
+
+            console.log(`Spawning player into lobby`)
 
             // Put them into waiting area, with a player count
             // TODO - If game hasn't started, we should tell everyone when somenew new joins
@@ -79,7 +68,6 @@ export class LobbyManager {
                 this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
             })
 
-            console.log(`Beginning game`)
 
             const entitySelf = new PlayerCharacter(spawnPoint.x, spawnPoint.y)
             this.nengiInstance.addEntity(entitySelf)
@@ -107,7 +95,6 @@ export class LobbyManager {
     // Frontend shoujldn't allow move to be called before start - but check incase
     processClientCommand(command: any, client: any) {
 
-        console.log("Trying to process move")
         if (client.entitySelf) {
 
             const entitySelf = client.entitySelf

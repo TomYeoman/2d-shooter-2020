@@ -4,14 +4,12 @@ import nengiConfig from "../../../common/nengiconfig";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Simulator from "../Simulator";
 import RequestJoinGame from '../../../common/command/RequestJoinGame'
-import { lobbyState } from "../../../common/types/types";
-import LobbyStateMessage from "../../../common/message/LobbyStateMessage";
 
-const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
-  active: false,
-  visible: false,
-  key: "Game",
-};
+// const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
+//   active: false,
+//   visible: false,
+//   key: "Game",
+// };
 
 export class MainScene extends Phaser.Scene {
   map: Phaser.Tilemaps.Tilemap;
@@ -27,7 +25,7 @@ export class MainScene extends Phaser.Scene {
   };
 
   constructor() {
-    super(sceneConfig);
+    super({});
     this.state = {
       myId: null,
       myEntity: null,
@@ -40,6 +38,7 @@ export class MainScene extends Phaser.Scene {
     this.nengiClient = client;
   }
 
+
   public preload() {
     this.load.image("player", "survivor-shotgun.png");
 
@@ -47,7 +46,9 @@ export class MainScene extends Phaser.Scene {
     this.load.tilemapTiledJSON("map", "spawn_island.json");
   }
 
-  public create() {
+  public create(data: any) {
+
+
     this.map = this.make.tilemap({ key: "map" });
 
     const tileset = this.map.addTilesetImage(
@@ -55,7 +56,7 @@ export class MainScene extends Phaser.Scene {
       "tiles"
     );
 
-    const belowLayer = this.map.createStaticLayer(
+    this.map.createStaticLayer(
       "Below Player",
       tileset,
       0,
@@ -91,15 +92,12 @@ export class MainScene extends Phaser.Scene {
     const RequestJoinGameCommand = new RequestJoinGame("")
     this.nengiClient.addCommand(RequestJoinGameCommand)
 
-    // setTimeout(() => {
-    //   const RequestJoinGameCommand = new RequestJoinGame("")
-    //   this.nengiClient.addCommand(RequestJoinGameCommand)
-    // }, 5000)
-
   }
 
   public update() {
 
+    console.log("Main update")
+    // console.log(this.map)
     // Compute delta time since last update.
     const now_ts = +new Date();
     const last_ts = this.last_ts || now_ts;

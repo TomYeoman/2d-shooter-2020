@@ -1,6 +1,5 @@
 require("@geckos.io/phaser-on-nodejs");
 import Phaser from "phaser";
-import MainScene from "../scenes/main-scene";
 
 // @ts-ignore
 import {phaserGameConfig, serverFPS} from "../../../common/config/phaserConfig";
@@ -11,7 +10,6 @@ const config = {
   ...phaserGameConfig,
   type: Phaser.HEADLESS,
   audio: false,
-  // scene: [MainScene],
   fps: {
     target: serverFPS,
     forceSetTimeOut: true,

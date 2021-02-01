@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { SCENE_NAMES } from "../game";
 
-export class LevelOne extends Phaser.Scene {
+export class LevelZero extends Phaser.Scene {
   map: Phaser.Tilemaps.Tilemap;
   worldLayer: Phaser.Tilemaps.StaticTilemapLayer;
 
@@ -36,18 +36,9 @@ export class LevelOne extends Phaser.Scene {
 
       console.log("Restarting MAIN in 3 seconds")
       setTimeout(() => {
-        this.scene.stop(SCENE_NAMES.LEVEL_ONE)
-        this.scene.run(SCENE_NAMES.MAIN)
+        this.scene.sleep(SCENE_NAMES.LEVEL_ZERO)
+        this.scene.wake(SCENE_NAMES.LEVEL_ONE, {data: true})
       }, 3000)
-
-      // this.events.on(Phaser.Scenes.Events.WAKE, () => {
-      //   // debugger
-      //   setTimeout(() => {
-      //     console.log("Back to level 1 in 3 seconds")
-      //     this.scene.sleep(SCENE_NAMES.LEVEL_ONE)
-      //     this.scene.run(SCENE_NAMES.MAIN, {data: true})
-      //   }, 3000)
-      // });
 
   }
 

@@ -1,5 +1,5 @@
 import Phaser, { Scene } from "phaser";
-import { SCENE_NAME } from "./index";
+import { SCENE_NAMES } from "../game/index";
 
 const textStyle = {
     fill: "#ffffff",
@@ -33,9 +33,9 @@ export default class LoadingScene extends Scene {
 
     create() {
 
-        console.log("switching to main")
-        setTimeout(() => {
-                this.scene.start(SCENE_NAME.MAIN);
-        }, 5000)
+        // console.log("switching to main")
+        // setTimeout(() => {
+        //         this.scene.start(SCENE_NAME.MAIN);
+        // }, 5000)
     }
 }

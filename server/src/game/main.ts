@@ -1,8 +1,9 @@
 import "@geckos.io/phaser-on-nodejs";
 import nengi from "nengi";
-import { installScenes, SCENE_NAME } from "../scenes/index";
+import { installScenes, SCENE_NAMES } from "./index";
 import config from "./config";
 import Phaser, { Game } from "phaser";
+// import {SCENE_NAMES} from "../../../common/types/types"
 
 // export class PhaserGame extends Phaser.Game {
 //     constructor(config: Phaser.Types.Core.GameConfig) {
@@ -28,6 +29,11 @@ export const newGame = (nengiInstance: nengi.Instance) => {
 
     // Add scenes to our game for later (loading, menu, main, and settings)
     installScenes(game);
+
+    console.log("Starting game?")
+    game.scene.start(SCENE_NAMES.MAIN)
+
+
     console.log("Starting game")
 
     return game

@@ -34,10 +34,6 @@ export default class MainScene extends Phaser.Scene {
         this.load.tilemapTiledJSON("map", mapPath);
     }
 
-    constructor() {
-        super("MainScene");
-
-    }
 
     init() {
         console.log("Running init");
@@ -120,7 +116,6 @@ export default class MainScene extends Phaser.Scene {
                     console.log("Trying to process request game")
                     this.lobby.connectClient(command, client)
                 } else {
-                    console.log("Trying to process move")
                     this.lobby.processClientCommand(command,client)
                 }
             }

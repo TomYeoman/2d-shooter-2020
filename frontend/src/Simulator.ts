@@ -64,9 +64,14 @@ class Simulator {
 
             console.log("Recieved update on lobby state")
 
-
             if (lobbyMessage.state === lobbyState.WAITING_FOR_PLAYERS) {
                 this.renderer.displayText(`Waiting for players, currently ${lobbyMessage.playerCount} / ${lobbyMessage.lobbyMinimum}` )
+            }
+
+            if (lobbyMessage.state === lobbyState.IN_PROGRESS) {
+                // LOAD THE MAP
+                console.log("Loading map in progress")
+                this.renderer.loadLevel(lobbyMessage.scene)
             }
 
         }
@@ -116,6 +121,7 @@ class Simulator {
         this.input.releaseKeys()
 
     }
+
 
 }
 
