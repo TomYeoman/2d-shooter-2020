@@ -18,18 +18,8 @@ export class MainScene extends Phaser.Scene {
   simulator: Simulator;
   last_ts: number
 
-  state: {
-    myId: number | null;
-    myEntity: string | null;
-    // lobbyState: LobbyStateMessage
-  };
-
   constructor() {
     super({});
-    this.state = {
-      myId: null,
-      myEntity: null,
-    };
 
     const client = new nengi.Client(
       nengiConfig,
@@ -47,8 +37,6 @@ export class MainScene extends Phaser.Scene {
   }
 
   public create(data: any) {
-
-
     this.map = this.make.tilemap({ key: "map" });
 
     const tileset = this.map.addTilesetImage(
@@ -56,12 +44,16 @@ export class MainScene extends Phaser.Scene {
       "tiles"
     );
 
+  //@ts-ignore
     this.map.createStaticLayer(
       "Below Player",
       tileset,
       0,
       0
     );
+
+      //@ts-ignore
+
     this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
     this.worldLayer.setCollisionByProperty({ collides: true });
 

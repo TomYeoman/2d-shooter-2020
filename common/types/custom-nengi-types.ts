@@ -6,7 +6,7 @@ export declare namespace ExtendedNengiTypes {
     class Instance extends nengi.Instance {
         emit(...args: any[]):void
         onConnect(fn: (client:any, data:any, callback:any) => void): void
-        onDisconnect(fn: (client: nengi.Client) => void): void
+        onDisconnect(fn: (client: Client) => void): void
         getNextCommand(): any
         createChannel(): any
         set(entityId:string, entity:any): void
@@ -14,6 +14,7 @@ export declare namespace ExtendedNengiTypes {
     class Client extends nengi.Client {
        onConnect(fn: (res:any) => void): void
        onClose(fn: () => void): void
+       entitySelf: any
     }
 
     let testProperty: any;

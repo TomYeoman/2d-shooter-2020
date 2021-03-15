@@ -15,12 +15,13 @@ export class LobbyManager {
     state: lobbyState
     sceneMap: Phaser.Tilemaps.Tilemap
     lobbyMinimum: number = 2
+    phaserInstance:Phaser.Scene
 
-    constructor(nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap) {
+    constructor(phaserInstance: Phaser.Scene, nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap) {
         this.nengiInstance = nengiInstance
         this.state = lobbyState.WAITING_FOR_PLAYERS
         this.sceneMap = sceneMap
-
+        this.phaserInstance = phaserInstance
 
     }
 
@@ -52,6 +53,10 @@ export class LobbyManager {
                 console.log("Sending message to client")
                 this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
 
+                this.phaserInstance.scene.sleep(SCENE_NAMES.MAIN)
+
+                // Run our minigame of choice, passing in nengi
+                this.phaserInstance.scene.run(this.scene, { nengiInstance: this.nengiInstance })
 
                 // Now all clients have moved to new scene, change scene on server
                 // TODO - Maybe add a timer here?
@@ -88,13 +93,12 @@ export class LobbyManager {
                 halfWidth: 99999,
                 halfHeight: 99999
             }
-
         }
     }
 
-    // Frontend shoujldn't allow move to be called before start - but check incase
     processClientCommand(command: any, client: any) {
 
+        // Frontend shouldn't allow move to be called before start - but check incase
         if (client.entitySelf) {
 
             const entitySelf = client.entitySelf

@@ -61,7 +61,7 @@ class PhaserEntityRenderer {
     }
 
     displayText(text: string) {
-        const textStyle = {
+        const textStyle:any = {
             fill: "#ffffff",
             align: "center",
             fontSize: 30,

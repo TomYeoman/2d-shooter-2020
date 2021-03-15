@@ -73,21 +73,18 @@ export default class MainScene extends Phaser.Scene {
 
         this.nengiInstance.onDisconnect(client => {
             this.nengiInstance.emit('disconnect', client)
-        })
 
-        this.nengiInstance.on('disconnect', client => {
-            // If we're tracking an entity for the disconnected player
-            // then remove it
             if (client.entitySelf) {
-                console.log("Player disconnected, deleting entity ", client.entitySelf.nid)
+                console.log(`Player ${client.entitySelf.nid} disconnected from main-scene, , deleting entity`)
                 this.nengiInstance.removeEntity(client.entitySelf)
             } else {
                 console.log("Player disconnected, but had no entity to clear up")
             }
+
         })
 
         // Create a single lobby for now
-        this.lobby = new LobbyManager(this.nengiInstance, this.map)
+        this.lobby = new LobbyManager(this, this.nengiInstance, this.map)
 
         // Handle client inputs / sending game state every 20 ticks (default), versus physics phaser running @ closer to 60 FPS (default)
         setInterval(() => {
