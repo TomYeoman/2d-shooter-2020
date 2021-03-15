@@ -6,7 +6,7 @@ import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import NetLog from "../../../common/message/NetLog";
 import PlayerCharacter from "../../../common/entity/PlayerCharacter";
 import Identity from "../../../common/message/Identity";
-import nengiConfig from '../../../common/nengiconfig'
+import nengiConfig from '../../../common/config/nengiConfig'
 import { update } from "lodash";
 import { LobbyManager } from "../game/LobbyManager";
 import { commandTypes, messageTypes } from "../../../common/types/types";
@@ -23,6 +23,8 @@ export default class MainScene extends Phaser.Scene {
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
     map: Phaser.Tilemaps.Tilemap
     lobby: LobbyManager
+
+    inputHandlerTimer ?: any
 
     preload() {
 
@@ -72,10 +74,10 @@ export default class MainScene extends Phaser.Scene {
         })
 
         this.nengiInstance.onDisconnect(client => {
-            this.nengiInstance.emit('disconnect', client)
+            // this.nengiInstance.emit('disconnect', client)
 
             if (client.entitySelf) {
-                console.log(`Player ${client.entitySelf.nid} disconnected from main-scene, , deleting entity`)
+                console.log(`Player ${client.entitySelf.nid} disconnected from main-scene, clearing down entities`)
                 this.nengiInstance.removeEntity(client.entitySelf)
             } else {
                 console.log("Player disconnected, but had no entity to clear up")
@@ -83,13 +85,14 @@ export default class MainScene extends Phaser.Scene {
 
         })
 
-        // Create a single lobby for now
-        this.lobby = new LobbyManager(this, this.nengiInstance, this.map)
-
         // Handle client inputs / sending game state every 20 ticks (default), versus physics phaser running @ closer to 60 FPS (default)
-        setInterval(() => {
+        this.inputHandlerTimer = setInterval(() => {
             this.handleInputs()
         }, 1000 / nengiConfig.UPDATE_RATE);
+
+        // Create a single lobby for now
+        this.lobby = new LobbyManager(this, this.nengiInstance, this.map, this.inputHandlerTimer)
+
     }
 
     // Phaser event tick - use for physics etc
@@ -98,6 +101,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     handleInputs() {
+        // console.log("Main 1 handle update")
         // this.nengiInstance.emitCommands()
         /* serverside logic can go here */
 
@@ -108,6 +112,8 @@ export default class MainScene extends Phaser.Scene {
 
             for (let i = 0; i < cmd.commands.length; i++) {
                 const command = cmd.commands[i]
+
+                // console.log(`Main - Processing command ${command.protocol.name}`)
 
                 if (command.protocol.name === commandTypes.REQUEST_JOIN_GAME) {
                     console.log("Trying to process request game")

@@ -1,18 +1,18 @@
 import nengi from 'nengi'
-import Identity from './message/Identity'
-import NetLog from './message/NetLog'
-import LobbyStateMessage from './message/LobbyStateMessage'
-import PlayerCharacter from './entity/PlayerCharacter'
+import Identity from '../message/Identity'
+import NetLog from '../message/NetLog'
+import LobbyStateMessage from '../message/LobbyStateMessage'
+import PlayerCharacter from '../entity/PlayerCharacter'
 // import PlayerCharacter from './PlayerCharacter.js'
 // import Asteroid from './Asteroid.js'
 // import PlayerInput from './PlayerInput.js'
 // import Identity from './Identity.js'
-import MoveCommand from './command/MoveCommand'
-import RequestJoinGame from './command/RequestJoinGame'
-import {commandTypes, messageTypes} from './types/types'
+import MoveCommand from '../command/MoveCommand'
+import RequestJoinGame from '../command/RequestJoinGame'
+import {commandTypes, messageTypes} from '../types/types'
 
 const config:any = {
-    UPDATE_RATE: 30,
+    UPDATE_RATE: 20,
 
     ID_BINARY_TYPE: nengi.UInt16,
     TYPE_BINARY_TYPE: nengi.UInt8,
@@ -20,8 +20,8 @@ const config:any = {
     ID_PROPERTY_NAME: 'nid',
     TYPE_PROPERTY_NAME: 'ntype',
 
-    USE_HISTORIAN: true,
-    HISTORIAN_TICKS: 40,
+    USE_HISTORIAN: false,
+    HISTORIAN_TICKS: 0,
 
     protocols: {
         entities: [

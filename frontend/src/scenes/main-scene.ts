@@ -1,6 +1,6 @@
 import nengi from "nengi";
 import Phaser from "phaser";
-import nengiConfig from "../../../common/nengiconfig";
+import nengiConfig from "../../../common/config/nengiConfig";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Simulator from "../Simulator";
 import RequestJoinGame from '../../../common/command/RequestJoinGame'
@@ -28,7 +28,6 @@ export class MainScene extends Phaser.Scene {
     this.nengiClient = client;
   }
 
-
   public preload() {
     this.load.image("player", "survivor-shotgun.png");
 
@@ -44,7 +43,7 @@ export class MainScene extends Phaser.Scene {
       "tiles"
     );
 
-  //@ts-ignore
+    //@ts-ignore
     this.map.createStaticLayer(
       "Below Player",
       tileset,
@@ -52,7 +51,7 @@ export class MainScene extends Phaser.Scene {
       0
     );
 
-      //@ts-ignore
+    //@ts-ignore
 
     this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
     this.worldLayer.setCollisionByProperty({ collides: true });
@@ -88,8 +87,6 @@ export class MainScene extends Phaser.Scene {
 
   public update() {
 
-    console.log("Main update")
-    // console.log(this.map)
     // Compute delta time since last update.
     const now_ts = +new Date();
     const last_ts = this.last_ts || now_ts;
@@ -98,23 +95,26 @@ export class MainScene extends Phaser.Scene {
 
     const network = this.nengiClient.readNetwork();
 
-    network.entities.forEach((snapshot:any) => {
-      snapshot.createEntities.forEach((entity:any) => {
-          this.simulator.createEntity(entity)
+    network.entities.forEach((snapshot: any) => {
+      snapshot.createEntities.forEach((entity: any) => {
+        console.log(`creating new ${entity.protocol.name} entity `, entity)
+        this.simulator.createEntity(entity)
       })
 
-      snapshot.updateEntities.forEach((update:any) => {
-          this.simulator.updateEntity(update)
+      snapshot.updateEntities.forEach((update: any) => {
+
+        this.simulator.updateEntity(update)
       })
 
       snapshot.deleteEntities.forEach((id: string) => {
-          this.simulator.deleteEntity(id)
+        console.log(`Deleting entity `, id)
+        this.simulator.deleteEntity(id)
       })
-  })
+    })
 
     network.messages.forEach((message: any) => {
+      console.log(`Recieved ${message.protocol.name} message:`, message);
       this.simulator.processMessage(message)
-      console.log("Recieved message:", message);
     });
 
     this.simulator.update(dt_sec);

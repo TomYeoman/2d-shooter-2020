@@ -9,7 +9,7 @@ import LobbyStateMessage from '../../common/message/LobbyStateMessage'
 
 class Simulator {
 
-    client: nengi.Client
+    nengiClient: nengi.Client
     input: InputSystem
     entities: Map<string, any>
     renderer: PhaserEntityRenderer
@@ -17,8 +17,8 @@ class Simulator {
     entityIdSelf : number
     myEntity : PlayerCharacter | null
 
-    constructor(client: nengi.Client, phaserInstance: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
-        this.client = client
+    constructor(nengiClient: nengi.Client, phaserInstance: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
+        this.nengiClient = nengiClient
         this.input = new InputSystem()
         this.entities = new Map()
 
@@ -30,7 +30,7 @@ class Simulator {
     }
 
     createEntity(entity: any) {
-        console.log('creating entity', entity)
+        console.log(`creating new ${entity.protocol.name} entity (Simulator)`)
 
         if (entity.protocol.name === 'PlayerCharacter') {
             let newEntity = new PlayerCharacter(entity.x, entity.y)
@@ -40,7 +40,7 @@ class Simulator {
 
             // debugger;
             if (entity.nid === this.entityIdSelf) {
-                console.log('discovered self')
+                console.log(`Discovered local version of my remote entity, with id ${entity.nid}`)
                 this.myEntity = newEntity
             }
         }
@@ -70,15 +70,15 @@ class Simulator {
 
             if (lobbyMessage.state === lobbyState.IN_PROGRESS) {
                 // LOAD THE MAP
-                console.log("Loading map in progress")
-                this.renderer.loadLevel(lobbyMessage.scene)
+                console.log(`Attempting to load scene ${lobbyMessage.scene}`)
+                this.renderer.loadLevel(lobbyMessage.scene, this.nengiClient)
             }
 
         }
 
         if (message.protocol.name === messageTypes.IDENTITY) {
             // be able to access self from simular
-            console.log('identified as', message)
+            console.log('Assigned my remote entity ID as ', message.entityId)
             this.entityIdSelf = message.entityId
 
             // Also create a self representation, in the rendered
@@ -87,6 +87,8 @@ class Simulator {
     }
 
     update(delta: number) {
+
+        // console.log("Calling update")
         const input = this.input.frameState
 
         if (this.myEntity) {
@@ -115,7 +117,7 @@ class Simulator {
             // console.log(rotation)
 
             const moveCommand = new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta)
-            this.client.addCommand(moveCommand)
+            this.nengiClient.addCommand(moveCommand)
         }
 
         this.input.releaseKeys()

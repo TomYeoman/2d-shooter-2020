@@ -6,9 +6,8 @@ import Phaser from "phaser";
 // - type
 // _ FPS
 
-export const serverFPS = 60
-export const clientFPS = 60
-export const serverBroadcastRate = 10
+export const serverFPS = 100
+export const clientFPS = 100
 export const phaserGameConfig: Phaser.Types.Core.GameConfig = {
     title: "Game",
     width: 1280,

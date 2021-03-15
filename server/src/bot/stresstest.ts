@@ -1,13 +1,14 @@
 import nengi from 'nengi'
-import nengiConfig from '../../../common/nengiconfig'
+import nengiConfig from '../../../common/config/nengiConfig'
 import MoveCommand from '../../../common/command/MoveCommand'
+import RequestJoinGame from '../../../common/command/RequestJoinGame'
 
 const nengiClient:any = nengi
 
 const protocolMap = new nengiClient.ProtocolMap(nengiConfig, nengiClient.metaConfig)
 
 const address = 'ws://localhost:8079'
-const numberOfBots = 100
+const numberOfBots = 10
 const bots = new Map()
 
 function connectNewBot(id:any) {
@@ -34,6 +35,12 @@ function connectNewBot(id:any) {
 
     bots.set(bot.id, bot)
     bot.connect(address, {})
+
+
+    const RequestJoinGameCommand = new RequestJoinGame("")
+    bot.addCommand(RequestJoinGameCommand)
+    bot.update()
+
 }
 
 for (let i = 0; i < numberOfBots; i++) {

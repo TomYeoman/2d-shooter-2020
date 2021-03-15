@@ -2,7 +2,7 @@ import express from "express";
 import * as http from "http";
 import { newGame } from "../game/main";
 import nengi from 'nengi'
-import nengiConfig from '../../../common/nengiconfig'
+import nengiConfig from '../../../common/config/nengiConfig'
 
 export class GameServer {
 

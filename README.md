@@ -40,3 +40,16 @@ Currently changes to common require a manual reload on `server` - fix will come 
 
 WIP
 - Add client side prediction (simple providing your movement is deterministic on the server, will add example soon)
+
+
+
+Game Ideas
+- Lights out - Path to exit but lights come on / off randomly
+- Frogger
+- Obstacle coming at you, have to move through the shape (hole in the wall)
+- Take the hill - Get to top of hill with obstacles coming down
+- Simon Says ( Random numbers on board, he might say 2x15, or a color etc)
+- Zombie survival - Random spawns of bots spawn, attack them and survive
+- FFA - most kills
+- Battle Royale
+- Boss Survival

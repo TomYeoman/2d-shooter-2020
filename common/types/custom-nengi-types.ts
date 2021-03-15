@@ -13,6 +13,7 @@ export declare namespace ExtendedNengiTypes {
     }
     class Client extends nengi.Client {
        onConnect(fn: (res:any) => void): void
+
        onClose(fn: () => void): void
        entitySelf: any
     }

@@ -1,4 +1,5 @@
 
+import nengi from 'nengi'
 import {PlayerGraphic} from '../../common/graphics/PlayerGraphic'
 import { messageTypes } from '../../common/types/types'
 import { SCENE_NAMES } from './game/index'
@@ -19,7 +20,8 @@ class PhaserEntityRenderer {
     }
 
     createEntity(entity: any) {
-        console.log('renderer create', entity)
+        console.log(`creating new ${entity.protocol.name} entity ( Renderer )`)
+
         if (entity.protocol.name === 'PlayerCharacter') {
             const clientEntity = new PlayerGraphic(this.scene, entity.x, entity.y)
             this.entities.set(entity.nid, clientEntity)
@@ -45,8 +47,9 @@ class PhaserEntityRenderer {
 
     processMessage(message: any) {
         if (message.protocol.name === messageTypes.IDENTITY) {
+            // Use this to track camera against the correct entity
             this.myId = message.entityId
-            console.log('identified as', this.myId)
+            console.log('Assigned my remote entity ID as ', this.myId)
         }
     }
 
@@ -88,7 +91,7 @@ class PhaserEntityRenderer {
 
     }
 
-    loadLevel(scene: string) {
+    loadLevel(scene: string, nengiClient: nengi.Client) {
 
         if (!Object.values(SCENE_NAMES).includes(scene as SCENE_NAMES)) {
             debugger
@@ -96,7 +99,7 @@ class PhaserEntityRenderer {
         } else {
             let sceneName = scene as SCENE_NAMES
             this.scene.scene.sleep(SCENE_NAMES.MAIN)
-            this.scene.scene.run(SCENE_NAMES[sceneName], { data: true })
+            this.scene.scene.run(SCENE_NAMES[sceneName], { nengiClient })
         }
     }
 

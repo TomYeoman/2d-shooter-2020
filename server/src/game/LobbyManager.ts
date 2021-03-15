@@ -14,14 +14,19 @@ export class LobbyManager {
     timeRemaining: number = -1
     state: lobbyState
     sceneMap: Phaser.Tilemaps.Tilemap
-    lobbyMinimum: number = 2
-    phaserInstance:Phaser.Scene
+    lobbyMinimum: number = 1
+    phaserInstance: Phaser.Scene
 
-    constructor(phaserInstance: Phaser.Scene, nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap) {
+    // When we change scene, we must also cancel the input handler timer in main scene
+    // Otherwise we'll be processing inputs twice
+    inputHandlerTimer:any
+
+    constructor(phaserInstance: Phaser.Scene, nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap, inputHandlerTimer: any) {
         this.nengiInstance = nengiInstance
         this.state = lobbyState.WAITING_FOR_PLAYERS
         this.sceneMap = sceneMap
         this.phaserInstance = phaserInstance
+        this.inputHandlerTimer = inputHandlerTimer
 
     }
 
@@ -31,39 +36,42 @@ export class LobbyManager {
         this.checkGameIsReadyToBegin(command, client)
     }
 
-    checkGameIsReadyToBegin(command:RequestJoinGame, client: any) {
+    checkGameIsReadyToBegin(command: RequestJoinGame, client: any) {
         const playerCount = this.nengiInstance.clients.toArray().length
         const spawnPoint: any = this.sceneMap.findObject("Objects", (obj: any) => obj.name === "Spawn Point");
 
         console.log(`Checking whether game is ready to start with ${playerCount} players, and ${this.lobbyMinimum} minimum`)
 
+        if (playerCount >= this.lobbyMinimum && this.state != lobbyState.IN_PROGRESS) {
+            console.log(`Starting game in 5 seconds`)
+            setTimeout(() => {
+                console.log(`Beginning game`)
 
-        if (playerCount >= this.lobbyMinimum) {
-            console.log(`Beginning game`)
+                // Choose scene (would be dynamic in future)
+                this.scene = SCENE_NAMES.LEVEL_ONE
 
-            // Choose scene (would be dynamic in future)
-            this.scene = SCENE_NAMES.LEVEL_ONE
+                // Broadcast game start, and scene change to all clients
+                this.state = lobbyState.IN_PROGRESS
 
-            // Broadcast game start, and scene change to all clients
-            this.state = lobbyState.IN_PROGRESS
+                // Create player for each client and tell them it
+                this.nengiInstance.clients.forEach(client => {
 
-            // Create player for each client and tell them it
-            this.nengiInstance.clients.forEach(client => {
+                    console.log("Sending message to client")
 
-                console.log("Sending message to client")
-                this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
+                    clearInterval(this.inputHandlerTimer)
+                    this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
 
-                this.phaserInstance.scene.sleep(SCENE_NAMES.MAIN)
+                    this.phaserInstance.scene.sleep(SCENE_NAMES.MAIN)
 
-                // Run our minigame of choice, passing in nengi
-                this.phaserInstance.scene.run(this.scene, { nengiInstance: this.nengiInstance })
+                    // Run our minigame of choice, passing in nengi
+                    this.phaserInstance.scene.run(this.scene, { nengiInstance: this.nengiInstance })
 
-                // Now all clients have moved to new scene, change scene on server
-                // TODO - Maybe add a timer here?
-            })
+                    // Now all clients have moved to new scene, change scene on server
+                    // TODO - Maybe add a timer here?
+                })
+            }, 3000)
 
-
-        } else {
+            // } else {
 
             console.log(`Spawning player into lobby`)
 
@@ -93,6 +101,7 @@ export class LobbyManager {
                 halfWidth: 99999,
                 halfHeight: 99999
             }
+            // }
         }
     }
 
@@ -107,7 +116,9 @@ export class LobbyManager {
                 entitySelf.processMove(command)
             }
 
-            this.nengiInstance.clients.forEach(client => {
+            this.nengiInstance.clients.forEach((client, index )=> {
+                // console.log("Updating client ", index)
+
                 client.view.x = entitySelf.x
                 client.view.y = entitySelf.y
             })
