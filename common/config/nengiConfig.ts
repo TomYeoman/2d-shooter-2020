@@ -8,8 +8,9 @@ import PlayerCharacter from '../entity/PlayerCharacter'
 // import PlayerInput from './PlayerInput.js'
 // import Identity from './Identity.js'
 import MoveCommand from '../command/MoveCommand'
-import RequestJoinGame from '../command/RequestJoinGame'
 import {commandTypes, messageTypes} from '../types/types'
+import RequestSpawn from '../command/RequestSpawn'
+import RequestJoinGame from '../command/RequestJoinGame'
 
 const config:any = {
     UPDATE_RATE: 20,
@@ -36,8 +37,9 @@ const config:any = {
         ],
         commands: [
             // ['PlayerInput', PlayerInput]
-            ['MoveCommand', MoveCommand],
-            [commandTypes.REQUEST_JOIN_GAME, RequestJoinGame],
+            [commandTypes.MOVE_COMMAND, MoveCommand],
+            [commandTypes.REQUEST_GAME_INFO, RequestJoinGame],
+            [commandTypes.REQUEST_SPAWN, RequestSpawn],
         ],
         basics: []
     }

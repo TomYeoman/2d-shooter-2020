@@ -45,6 +45,17 @@ class PhaserEntityRenderer {
         // debugger
     }
 
+    deleteEntity(entityId: string) {
+        const entity = this.entities.get(entityId)
+
+        if (entity) {
+            entity.sprite.destroy()
+            this.entities.delete(entityId)
+        } else {
+            console.log(`Rendered tried to delete entity ${entityId} that doesn't exist `)
+        }
+    }
+
     processMessage(message: any) {
         if (message.protocol.name === messageTypes.IDENTITY) {
             // Use this to track camera against the correct entity

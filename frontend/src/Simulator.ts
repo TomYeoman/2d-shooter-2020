@@ -48,13 +48,19 @@ class Simulator {
 
     updateEntity(update: any) {
         const entity = this.entities.get(update.nid)
-        entity[update.prop] = update.value
 
-        this.renderer.updateEntity(update)
+        if (entity) {
+            entity[update.prop] = update.value
+            this.renderer.updateEntity(update)
+        } else {
+            console.log(`Tried to update entity ${update.nid} but it doesn't exist yet`)
+
+        }
     }
 
     deleteEntity(id: string) {
         this.entities.delete(id)
+        this.renderer.deleteEntity(id)
     }
 
     processMessage(message: any) {

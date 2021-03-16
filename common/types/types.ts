@@ -10,7 +10,9 @@ export enum gameState {
 }
 
 export enum commandTypes {
-    REQUEST_JOIN_GAME = "REQUEST_JOIN_GAME",
+    REQUEST_GAME_INFO = "REQUEST_GAME_INFO",
+    REQUEST_SPAWN = "REQUEST_SPAWN",
+    MOVE_COMMAND = "MOVE_COMMAND"
 }
 
 export enum messageTypes {

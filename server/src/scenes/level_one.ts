@@ -55,7 +55,7 @@ export default class LevelOne extends Phaser.Scene {
 
         // TODO - Delete all old entities ( Might be things other than player in lobby )
 
-        console.log(`Spawning player into level one`)
+        console.log(`Spawning players into level one`)
         this.nengiInstance.clients.forEach(client => {
 
             // Client was already created in main lobby, and we therefore need to delete
@@ -68,11 +68,11 @@ export default class LevelOne extends Phaser.Scene {
             }
 
             // Give player time to move to level
-            setTimeout(() => {
-                // TODO - Maybe allow the player to broadcast they have
-                // Loaded the level, rather than pushing them over
-                this.connectClient(client.name, client)
-            }, 1000)
+            // setTimeout(() => {
+            //     // TODO - Maybe allow the player to broadcast they have
+            //     // Loaded the level, rather than pushing them over
+            //     this.connectClient(client.name, client)
+            // }, 1000)
 
         })
 
@@ -84,6 +84,13 @@ export default class LevelOne extends Phaser.Scene {
     // Phaser event tick - use for physics etc
     update() {
         // console.log("Level one Update")
+
+        let clients = 0
+        this.nengiInstance.clients.forEach(() => { clients++ })
+        // this.nengiInstance.entit
+        // console.log(entities.length)
+
+        // console.log(clients)
     }
 
     handleInputs() {
@@ -99,20 +106,26 @@ export default class LevelOne extends Phaser.Scene {
                 const command = cmd.commands[i]
 
                 // console.log(`Level one - Processing command ${command.protocol.name}`)
+                switch (command.protocol.name) {
+                        // First a client asks about game info, so they are able to change their scene
+                        case commandTypes.REQUEST_GAME_INFO:
+                                // TODO - TIDY THIS UP, should be a generic message which sends a player to a level
+                                client.name = command.name
+                                this.nengiInstance.message(new LobbyStateMessage(lobbyState.IN_PROGRESS,"",  SCENE_NAMES.LEVEL_ONE, 0, 0), client)
+                            break;
 
-                if (command.protocol.name === commandTypes.REQUEST_JOIN_GAME) {
+                        // Once they have actually loaded the level, they will request to join current game
+                    case commandTypes.REQUEST_SPAWN:
+                        console.log("Trying to spawn")
+                            this.connectClient(client.name, client)
+                        break;
 
-                    // TODO - TIDY THIS UP, should be a generic message which sends a player to a level
-                    this.nengiInstance.message(new LobbyStateMessage(lobbyState.IN_PROGRESS,"",  SCENE_NAMES.LEVEL_ONE, 0, 0), client)
-
-                    // Give player time to move to level
-                    setTimeout(() => {
-                        this.connectClient(command.name, client)
-                    }, 1000)
-
-                } else {
-                    this.processClientCommand(command,client)
-                }
+                        case commandTypes.MOVE_COMMAND:
+                            this.processClientCommand(command,client)
+                            break;
+                        default:
+                            console.log(`Unrecognised command ${command.protocol.name} for ${client.name}`)
+                    }
 
             }
 
@@ -155,7 +168,7 @@ export default class LevelOne extends Phaser.Scene {
 
             const entitySelf = client.entitySelf
 
-            if (command.protocol.name === 'MoveCommand') {
+            if (command.protocol.name === commandTypes.MOVE_COMMAND) {
                 entitySelf.processMove(command)
             }
 

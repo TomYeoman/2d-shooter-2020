@@ -1,5 +1,6 @@
 import nengi from "nengi";
 import Phaser from "phaser";
+import RequestSpawn from "../../../common/command/RequestSpawn";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import { SCENE_NAMES } from "../game";
 import Simulator from "../Simulator";
@@ -43,8 +44,11 @@ export class LevelOne extends Phaser.Scene {
     //@ts-ignore
     this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
     this.worldLayer.setCollisionByProperty({ collides: true });
-
     this.simulator = new Simulator(this.nengiClient, this, this.map);
+
+    const RequestSpawnCommand = new RequestSpawn("")
+    this.nengiClient.addCommand(RequestSpawnCommand)
+
 
   }
 
@@ -66,7 +70,7 @@ export class LevelOne extends Phaser.Scene {
       })
 
       snapshot.updateEntities.forEach((update: any) => {
-
+        console.log(`Updating entity ${update.nid}`)
         this.simulator.updateEntity(update)
       })
 
