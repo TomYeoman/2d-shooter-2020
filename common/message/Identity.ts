@@ -1,9 +1,9 @@
 import nengi from 'nengi'
 
 class Identity {
-    entityId:string
+    entityId:number
 
-    constructor(entityId: string) {
+    constructor(entityId: number) {
         this.entityId = entityId
     }
 }

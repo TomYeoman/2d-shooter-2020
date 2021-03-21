@@ -9,7 +9,8 @@ import PlayerCharacter from "../../../common/entity/PlayerCharacter";
 import Identity from "../../../common/message/Identity";
 import nengi from "nengi";
 import RequestJoinGame from "../../../common/command/RequestJoinGame";
-
+import EasyStar from "easystarjs"
+import {Bot} from '../../../common/graphics/BotGraphic'
 /*
 When we start a new level, we need to
 
@@ -33,12 +34,26 @@ export default class LevelOne extends Phaser.Scene {
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
     map: Phaser.Tilemaps.Tilemap
 
+    // AI
+    finder: any;
+    bots: Bot[] = [];
+
     preload() {
         const imgPath = path.join(__dirname, "..", "assets", "tuxmon-sample-32px-extruded.png");
         const mapPath = path.join(__dirname, "..", "assets", "minigame_1.json");
+        const survivorShotgunPath = path.join(__dirname, "..", "assets", "survivor-shotgun.png");
 
         this.load.image("tiles", imgPath);
         this.load.tilemapTiledJSON("map", mapPath);
+
+        this.load.image("player", survivorShotgunPath);
+
+        // this.load.atlas(
+        //     "atlas",
+        //     "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.png",
+        //     "https://www.mikewesthad.com/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.json"
+        //   );
+
     }
 
     create({ nengiInstance }: { nengiInstance: ExtendedNengiTypes.Instance }) {
@@ -53,7 +68,48 @@ export default class LevelOne extends Phaser.Scene {
         this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
         this.worldLayer.setCollisionByProperty({ collides: true });
 
-        // TODO - Delete all old entities ( Might be things other than player in lobby )
+        console.log(`Setting up pathfinding for level one`)
+
+        // SETUP PATHFINDING
+        this.finder = new EasyStar.js()
+        this.finder.enableDiagonals()
+        this.finder.enableCornerCutting()
+
+        const getTileID = (x: number, y: number) => {
+            var tile = this.map.getTileAt(x, y);
+            return tile.index;
+        };
+
+        var grid = [];
+        for (var y = 0; y < this.map.height; y++) {
+            var col = [];
+            for (var x = 0; x < this.map.width; x++) {
+                // In each cell we store the ID of the tile, which corresponds
+                // to its index in the tileset of the map ("ID" field in Tiled)
+                col.push(getTileID(x, y));
+            }
+            grid.push(col);
+        }
+
+        this.finder.setGrid(grid);
+        // this.finder.setIterationsPerCalculation(1000);
+
+        let tilepaths = this.map.tilesets[0];
+        let acceptableTiles = [];
+
+        for (var i = tilepaths.firstgid - 1; i < tileset.total; i++) { // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
+            acceptableTiles.push(i + 1)
+
+            // if (!properties.hasOwnProperty(i)) {
+            //     // If there is no property indicated at all, it means it's a walkable tile
+            //     acceptableTiles.push(i+1);
+            //     continue;
+            // }
+            // if(!properties[i].collide) acceptableTiles.push(i+1);
+            // if(properties[i].cost) Game.finder.setTileCost(i+1, properties[i].cost); // If there is a cost attached to the tile, let's register it
+        }
+
+        this.finder.setAcceptableTiles(acceptableTiles)
 
         console.log(`Spawning players into level one`)
         this.nengiInstance.clients.forEach(client => {
@@ -65,6 +121,7 @@ export default class LevelOne extends Phaser.Scene {
                 // Remove our lobby entity, it's no longer needed
                 this.nengiInstance.removeEntity(client.entitySelf)
                 client.entitySelf = null
+
             }
 
             // Give player time to move to level
@@ -76,21 +133,70 @@ export default class LevelOne extends Phaser.Scene {
 
         })
 
+        // Add some bots to the game
+        const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === "Spawn Point");
+
+        for (let index = 0; index < 10; index++) {
+
+            // Create a new entity for nengi to track
+            const entityBot = new PlayerCharacter(spawnPoint.x + Math.random() * 500, spawnPoint.y + Math.random() * 500)
+            this.nengiInstance.addEntity(entityBot)
+
+            // Create a new phaser bot and link to entity, we'll apply physics to for each path check
+            const phaserBot = new Bot(this, entityBot.nid, spawnPoint.x + Math.random() * 500, spawnPoint.y + Math.random() * 500, this.bots, this.finder)
+            this.bots.push(phaserBot)
+        }
+
         setInterval(() => {
             this.handleInputs()
         }, 1000 / nengiConfig.UPDATE_RATE);
+
+
     }
 
     // Phaser event tick - use for physics etc
     update() {
-        // console.log("Level one Update")
+        // For each bot, work out the path to get to a the player
 
-        let clients = 0
-        this.nengiInstance.clients.forEach(() => { clients++ })
-        // this.nengiInstance.entit
-        // console.log(entities.length)
+        // Pick a random player
 
-        // console.log(clients)
+        // Grab first player info
+
+        let target:any
+        let isReadyToPath = false
+
+        // TODO find closest client instead
+        this.nengiInstance.clients.forEach((client) => {
+
+            let entitySelf = client.entitySelf
+            if (!entitySelf) {
+                console.log("No clients to path find to yet")
+            } else {
+                isReadyToPath = true
+                target = client
+                // targetX = Math.floor(client.entitySelf.x/32)
+                // targetY = Math.floor(client.entitySelf.y/32)
+                // clientID = client.entitySelf.nid
+            }
+        })
+
+        if (isReadyToPath) {
+            this.bots.forEach((bot: Bot, index) => {
+                bot.moveToPlayer(Math.floor(target.entitySelf.x/32), Math.floor((target.entitySelf.y/32)))
+
+                // Update over the wire entity, with phasers rending of it
+                let associatedNengiEntity = this.nengiInstance.getEntity(bot.entityId)
+
+                if (associatedNengiEntity) {
+                    // console.log(`Found associated nengi entity, sending phaser position over X${ bot.sprite.x}, Y:${ bot.sprite.y}`)
+                    associatedNengiEntity.x = bot.sprite.x
+                    associatedNengiEntity.y = bot.sprite.y
+
+                    associatedNengiEntity.rotation = Math.atan2(target.entitySelf.y - bot.sprite.y, target.entitySelf.x - bot.sprite.x)
+                }
+            });
+        }
+
     }
 
     handleInputs() {
@@ -107,25 +213,28 @@ export default class LevelOne extends Phaser.Scene {
 
                 // console.log(`Level one - Processing command ${command.protocol.name}`)
                 switch (command.protocol.name) {
-                        // First a client asks about game info, so they are able to change their scene
-                        case commandTypes.REQUEST_GAME_INFO:
-                                // TODO - TIDY THIS UP, should be a generic message which sends a player to a level
-                                client.name = command.name
-                                this.nengiInstance.message(new LobbyStateMessage(lobbyState.IN_PROGRESS,"",  SCENE_NAMES.LEVEL_ONE, 0, 0), client)
-                            break;
+                    // First a client asks about game info, so they are able to change their scene
+                    case commandTypes.REQUEST_GAME_INFO:
+                        // TODO - TIDY THIS UP, should be a generic message which sends a player to a level
 
-                        // Once they have actually loaded the level, they will request to join current game
-                    case commandTypes.REQUEST_SPAWN:
-                        console.log("Trying to spawn")
-                            this.connectClient(client.name, client)
+                        client.name = command.name
+                        console.log("A client requested game info")
+                        this.nengiInstance.message(new LobbyStateMessage(lobbyState.IN_PROGRESS, "", SCENE_NAMES.LEVEL_ONE, 0, 0), client)
                         break;
 
-                        case commandTypes.MOVE_COMMAND:
-                            this.processClientCommand(command,client)
-                            break;
-                        default:
-                            console.log(`Unrecognised command ${command.protocol.name} for ${client.name}`)
-                    }
+                    // Once they have actually loaded the level, they will request to join current game
+                    case commandTypes.REQUEST_SPAWN:
+                        console.log("Spawning player into level (creating entity for them")
+                        this.connectClient(client.name, client)
+                        break;
+
+                    case commandTypes.MOVE_COMMAND:
+                        // console.log("Player trying to move")
+                        this.processClientCommand(command, client)
+                        break;
+                    default:
+                        console.log(`Unrecognised command ${command.protocol.name} for ${client.name}`)
+                }
 
             }
 
@@ -172,7 +281,7 @@ export default class LevelOne extends Phaser.Scene {
                 entitySelf.processMove(command)
             }
 
-            this.nengiInstance.clients.forEach((client, index )=> {
+            this.nengiInstance.clients.forEach((client, index) => {
                 // console.log("Updating client ", index)
                 client.view.x = entitySelf.x
                 client.view.y = entitySelf.y

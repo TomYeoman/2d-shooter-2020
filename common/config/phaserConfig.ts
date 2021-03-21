@@ -6,16 +6,20 @@ import Phaser from "phaser";
 // - type
 // _ FPS
 
-export const serverFPS = 100
-export const clientFPS = 100
+
+// TODO - There's a bug here, where we recieve identity AFTER our entities
+// and bug out if doing so, when we drop this FPS to 5 - we should fix this ASAP
+export const serverFPS = 60
+export const clientFPS = 60
 export const phaserGameConfig: Phaser.Types.Core.GameConfig = {
     title: "Game",
+
     width: 1280,
     height: 720,
     physics: {
       default: "arcade",
       arcade: {
-        debug: true,
+        // debug: true,
       },
     },
   };

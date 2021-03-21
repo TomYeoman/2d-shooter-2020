@@ -6,7 +6,7 @@ import { SCENE_NAMES } from './game/index'
 
 class PhaserEntityRenderer {
 
-    entities: Map<string, any>
+    entities: Map<number, any>
     scene: Phaser.Scene
     myId: string
     myEntity: any
@@ -26,17 +26,27 @@ class PhaserEntityRenderer {
             const clientEntity = new PlayerGraphic(this.scene, entity.x, entity.y)
             this.entities.set(entity.nid, clientEntity)
 
-            // if that entity is ours, save it to myEntity
+            // We may already have an identity, in which case follow at point of recieving entity
             if (entity.nid === this.myId) {
                 this.myEntity = clientEntity
-
-                const camera = this.scene.cameras.main;
-                camera.startFollow(this.myEntity.sprite);
-                camera.setBounds(0, 0, this.sceneMap.widthInPixels, this.sceneMap.heightInPixels);
-
+                this.setupCamera()
             }
         }
 
+    }
+
+    // We may already recieve identity AFTER recieving entities, in which case follow at point of recieving entity
+    assignClientEntity(entityId: number) {
+
+        let clientEntity = this.entities.get(entityId)
+        this.myEntity = clientEntity
+        this.setupCamera()
+    }
+
+    setupCamera() {
+        const camera = this.scene.cameras.main;
+        camera.startFollow(this.myEntity.sprite);
+        camera.setBounds(0, 0, this.sceneMap.widthInPixels, this.sceneMap.heightInPixels);
     }
 
     updateEntity(update: any) {
@@ -45,7 +55,7 @@ class PhaserEntityRenderer {
         // debugger
     }
 
-    deleteEntity(entityId: string) {
+    deleteEntity(entityId: number) {
         const entity = this.entities.get(entityId)
 
         if (entity) {
@@ -68,8 +78,8 @@ class PhaserEntityRenderer {
         const pointer = this.scene.input.activePointer
 
         return {
-            x: pointer.x,
-            y: pointer.y,
+            x: pointer.worldX,
+            y: pointer.worldY,
         }
 
     }

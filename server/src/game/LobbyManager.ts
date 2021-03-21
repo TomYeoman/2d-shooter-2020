@@ -4,13 +4,13 @@ import RequestJoinGame from "../../../common/command/RequestJoinGame"
 import PlayerCharacter from "../../../common/entity/PlayerCharacter"
 import Identity from "../../../common/message/Identity"
 import LobbyStateMessage from "../../../common/message/LobbyStateMessage"
-import {lobbyState} from "../../../common/types/types"
-import {commandTypes} from '../../../common/types/types'
+import { lobbyState } from "../../../common/types/types"
+import { commandTypes } from '../../../common/types/types'
 export class LobbyManager {
 
     nengiInstance: nengi.Instance
     gameMode: string = "This is a demo game"
-    scene:string =  "demo-scene"
+    scene: string = "demo-scene"
     timeRemaining: number = -1
     state: lobbyState
     sceneMap: Phaser.Tilemaps.Tilemap
@@ -19,8 +19,8 @@ export class LobbyManager {
 
     // When we change scene, we must also cancel the input handler timer in main scene
     // Otherwise we'll be processing inputs twice
-    inputHandlerTimer:any
-    hasGameStarted:boolean = false
+    inputHandlerTimer: any
+    hasGameStarted: boolean = false
 
     constructor(phaserInstance: Phaser.Scene, nengiInstance: nengi.Instance, sceneMap: Phaser.Tilemaps.Tilemap, inputHandlerTimer: any) {
         this.nengiInstance = nengiInstance
@@ -48,60 +48,61 @@ export class LobbyManager {
             console.log(`Lobby now full, starting game in 5 seconds`)
 
             // We should update lobby event, to tell when to transition
-            this.hasGameStarted = true
+            // this.hasGameStarted = true
 
-            setTimeout(() => {
-                console.log(`Beginning game`)
+            // setTimeout(() => {
+            console.log(`Beginning game`)
 
-                this.state = lobbyState.IN_PROGRESS
-                // Choose scene (would be dynamic in future)
-                this.scene = SCENE_NAMES.LEVEL_ONE
+            this.state = lobbyState.IN_PROGRESS
+            // Choose scene (would be dynamic in future)
+            this.scene = SCENE_NAMES.LEVEL_ONE
 
-                // Broadcast game start, and scene change to all clients
-                this.nengiInstance.clients.forEach(client => {
+            // Broadcast game start, and scene change to all clients
+            this.nengiInstance.clients.forEach(client => {
 
-                    console.log("Moving client ")
-                    this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
+                console.log("Moving client ")
+                this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
 
-                    clearInterval(this.inputHandlerTimer)
-                })
+                clearInterval(this.inputHandlerTimer)
+            })
 
-                this.phaserInstance.scene.sleep(SCENE_NAMES.MAIN)
+            this.phaserInstance.scene.sleep(SCENE_NAMES.MAIN)
 
-                // Run our minigame of choice, passing in nengi
-                this.phaserInstance.scene.run(this.scene, { nengiInstance: this.nengiInstance })
+            // Run our minigame of choice, passing in nengi
+            this.phaserInstance.scene.run(this.scene, { nengiInstance: this.nengiInstance })
 
-            }, 3000)
+            // }, 3000)
 
+        } else {
+            console.log(`Spawning player into lobby until game starts`)
+
+            // Put them into waiting area, with a player count
+            // TODO - If game hasn't started, we should tell everyone when somenew new joins
+            this.nengiInstance.clients.forEach(client => {
+                this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
+            })
+
+            const entitySelf = new PlayerCharacter(spawnPoint.x, spawnPoint.y)
+            this.nengiInstance.addEntity(entitySelf)
+
+            // tell the client which entities it controls
+            this.nengiInstance.message(new Identity(entitySelf.nid), client)
+
+            // establish a relation between this entity and the client
+            entitySelf.client = client
+            client.entitySelf = entitySelf
+            client.name = command.name
+            client.positions = []
+
+            // define the view (the area of the game visible to this client, all else is culled)
+            client.view = {
+                x: entitySelf.x,
+                y: entitySelf.y,
+                halfWidth: 99999,
+                halfHeight: 99999
+            }
         }
 
-        console.log(`Spawning player into lobby until game starts`)
-
-        // Put them into waiting area, with a player count
-        // TODO - If game hasn't started, we should tell everyone when somenew new joins
-        this.nengiInstance.clients.forEach(client => {
-            this.nengiInstance.message(new LobbyStateMessage(this.state, this.gameMode, this.scene, playerCount, this.lobbyMinimum), client)
-        })
-
-        const entitySelf = new PlayerCharacter(spawnPoint.x, spawnPoint.y)
-        this.nengiInstance.addEntity(entitySelf)
-
-        // tell the client which entities it controls
-        this.nengiInstance.message(new Identity(entitySelf.nid), client)
-
-        // establish a relation between this entity and the client
-        entitySelf.client = client
-        client.entitySelf = entitySelf
-        client.name = command.name
-        client.positions = []
-
-        // define the view (the area of the game visible to this client, all else is culled)
-        client.view = {
-            x: entitySelf.x,
-            y: entitySelf.y,
-            halfWidth: 99999,
-            halfHeight: 99999
-        }
 
     }
 
@@ -116,7 +117,7 @@ export class LobbyManager {
                 entitySelf.processMove(command)
             }
 
-            this.nengiInstance.clients.forEach((client, index )=> {
+            this.nengiInstance.clients.forEach((client, index) => {
                 // console.log("Updating client ", index)
 
                 client.view.x = entitySelf.x

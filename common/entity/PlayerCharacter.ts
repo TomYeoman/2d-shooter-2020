@@ -14,7 +14,7 @@ class PlayerCharacter {
     }
 
     // Automatically assigned when added to nengi
-    nid: string
+    nid: number
     ntype: string
 
     // Added ourself, not sent over wire?
@@ -46,10 +46,10 @@ class PlayerCharacter {
         let unitY = 0
 
         // create forces from input
-        if (command.forward) { unitY -= 1 }
-        if (command.backward) { unitY += 1 }
-        if (command.left) { unitX -= 1 }
-        if (command.right) { unitX += 1 }
+        if (command.forward) { unitY -= 5 }
+        if (command.backward) { unitY += 5 }
+        if (command.left) { unitX -= 5 }
+        if (command.right) { unitX += 5 }
 
         // normalize
         const len = Math.sqrt(unitX * unitX + unitY * unitY)

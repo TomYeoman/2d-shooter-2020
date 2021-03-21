@@ -12,9 +12,9 @@ export class PlayerGraphic {
         y: number,
     ) {
         this.sprite = scene.physics.add
-            .sprite(x, y, "player")
-            // .setSize(200, 200)
-            .setCircle(100, 100)
+        .sprite(x, y, "player")
+        // .setSize(200, 200)
+        .setCircle(100, 100)
         .setOffset(25, 25)
 
         this.sprite.scale = 0.3

@@ -11,7 +11,7 @@ class Simulator {
 
     nengiClient: nengi.Client
     input: InputSystem
-    entities: Map<string, any>
+    entities: Map<number, any>
     renderer: PhaserEntityRenderer
 
     entityIdSelf : number
@@ -58,7 +58,7 @@ class Simulator {
         }
     }
 
-    deleteEntity(id: string) {
+    deleteEntity(id: number) {
         this.entities.delete(id)
         this.renderer.deleteEntity(id)
     }
@@ -86,13 +86,26 @@ class Simulator {
             // be able to access self from simular
             console.log('Assigned my remote entity ID as ', message.entityId)
             this.entityIdSelf = message.entityId
-
             // Also create a self representation, in the rendered
             this.renderer.processMessage(message)
+
+            // If we had already created entities (I.E we recieved IDENTIFY after the entities were sent - happens on low FPS ) -
+            // we should go and assign them to ourselves correctly now
+            let existingEntity = this.entities.get(message.entityId)
+            if (!existingEntity) {
+                console.log("Recieved identity before the entity, therefore no need to assign an entity at point of recieivng identity")
+                return
+            } else {
+                this.myEntity = existingEntity
+                // Also setup rendereds reference to entity
+                this.renderer.assignClientEntity(message.entityId)
+            }
+
         }
     }
 
     update(delta: number) {
+
 
         // console.log("Calling update")
         const input = this.input.frameState
@@ -124,6 +137,8 @@ class Simulator {
 
             const moveCommand = new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta)
             this.nengiClient.addCommand(moveCommand)
+        } else {
+            console.log("No entity found for player to move")
         }
 
         this.input.releaseKeys()

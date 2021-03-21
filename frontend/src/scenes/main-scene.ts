@@ -106,7 +106,7 @@ export class MainScene extends Phaser.Scene {
         this.simulator.updateEntity(update)
       })
 
-      snapshot.deleteEntities.forEach((id: string) => {
+      snapshot.deleteEntities.forEach((id: number) => {
         console.log(`Deleting entity `, id)
         this.simulator.deleteEntity(id)
       })

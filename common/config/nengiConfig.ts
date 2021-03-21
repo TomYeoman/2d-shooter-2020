@@ -8,12 +8,14 @@ import PlayerCharacter from '../entity/PlayerCharacter'
 // import PlayerInput from './PlayerInput.js'
 // import Identity from './Identity.js'
 import MoveCommand from '../command/MoveCommand'
+import FireCommand from '../command/FireCommand'
+
 import {commandTypes, messageTypes} from '../types/types'
 import RequestSpawn from '../command/RequestSpawn'
 import RequestJoinGame from '../command/RequestJoinGame'
 
 const config:any = {
-    UPDATE_RATE: 20,
+    UPDATE_RATE: 30,
 
     ID_BINARY_TYPE: nengi.UInt16,
     TYPE_BINARY_TYPE: nengi.UInt8,
@@ -40,6 +42,7 @@ const config:any = {
             [commandTypes.MOVE_COMMAND, MoveCommand],
             [commandTypes.REQUEST_GAME_INFO, RequestJoinGame],
             [commandTypes.REQUEST_SPAWN, RequestSpawn],
+            [commandTypes.FIRE_COMMAND, FireCommand],
         ],
         basics: []
     }

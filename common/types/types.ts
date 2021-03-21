@@ -12,7 +12,8 @@ export enum gameState {
 export enum commandTypes {
     REQUEST_GAME_INFO = "REQUEST_GAME_INFO",
     REQUEST_SPAWN = "REQUEST_SPAWN",
-    MOVE_COMMAND = "MOVE_COMMAND"
+    MOVE_COMMAND = "MOVE_COMMAND",
+    FIRE_COMMAND = "FIRE_COMMAND"
 }
 
 export enum messageTypes {

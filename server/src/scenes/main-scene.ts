@@ -10,7 +10,6 @@ import nengiConfig from '../../../common/config/nengiConfig'
 import { update } from "lodash";
 import { LobbyManager } from "../game/LobbyManager";
 import { commandTypes, messageTypes } from "../../../common/types/types";
-import EasyStar from "easystarjs"
 
 export default class MainScene extends Phaser.Scene {
 
@@ -26,7 +25,6 @@ export default class MainScene extends Phaser.Scene {
     lobby: LobbyManager
 
     inputHandlerTimer ?: any
-    finder: any;
 
     preload() {
 
@@ -69,29 +67,6 @@ export default class MainScene extends Phaser.Scene {
         this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
         this.worldLayer.setCollisionByProperty({ collides: true });
 
-        this.finder = new EasyStar.js()
-
-        // const getTileID = (x:number,y:number) => {
-        //     var tile = this.map.getTileAt(x, y);
-        //     return tile.index;
-        // };
-
-        // var grid = [];
-        //     for(var y = 0; y < this.map.height; y++){
-        //         var col = [];
-        //         for(var x = 0; x < this.map.width; x++){
-        //             // In each cell we store the ID of the tile, which corresponds
-        //             // to its index in the tileset of the map ("ID" field in Tiled)
-        //             col.push(getTileID(x,y));
-        //         }
-        //         grid.push(col);
-        //     }
-
-        // this.finder.setGrid(grid);
-
-
-
-        console.log(tileset.tileData)
 
         // Nengi - Perhaps extract?
         this.nengiInstance.onConnect((client, data, callback) => {
