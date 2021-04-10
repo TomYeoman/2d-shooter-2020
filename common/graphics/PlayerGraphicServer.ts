@@ -26,6 +26,9 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
 
         super(scene, xStart, yStart, "player")
+        this.bulletEntities = new Map()
+        this.scale = 0.3
+
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
@@ -34,10 +37,8 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         this.associatedEntityId = associatedEntityId
 
-        this.setCircle(15)
+        // this.setCircle(15)
         // this.setOffset(15)
-        this.bulletEntities = new Map()
-
 
         this.speed = 1000
         this.weaponSystem = new WeaponSystem()

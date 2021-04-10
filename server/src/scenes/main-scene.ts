@@ -35,7 +35,8 @@ export default class MainScene extends Phaser.Scene {
     phaserInstance: Phaser.Scene
     playerGraphics: Map<number, PlayerGraphicServer>
     hasGameStarted = false
-    levelName = "zm_castle";
+
+    levelName = "spawn_island";
 
 
     preload() {
@@ -43,7 +44,9 @@ export default class MainScene extends Phaser.Scene {
         const imgPath = path.join(__dirname, "..", "assets", "tuxmon-sample-32px-extruded.png");
         const mapPath = path.join(__dirname, "..", "assets", `${this.levelName}.json`);
         // const mapPath = path.join(__dirname, "..", "assets", "first_map.json");
+        const survivorShotgunPath = path.join(__dirname, "..", "assets", "survivor-shotgun.png");
 
+        this.load.image("player", survivorShotgunPath);
         this.load.image("tiles", imgPath);
         this.load.tilemapTiledJSON(this.levelName, mapPath);
     }
@@ -64,21 +67,22 @@ export default class MainScene extends Phaser.Scene {
 
     create() {
 
-        console.log("Running create");
-        // this.listen();
-
-        this.map = this.make.tilemap({ key: this.levelName });
         this.entities = new Map();
         this.playerGraphics = new Map();
+
+
+        console.log("Running create");
+
+        this.map = this.make.tilemap({ key: this.levelName });
 
         // Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
         // Phaser's cache (i.e. the name you used in preload)
         const tileset = this.map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
         // Parameters: layer name (or index) from Tiled, tileset, x, y
-        const belowLayer = this.map.createStaticLayer("Below Player", tileset, 0, 0);
+        // const belowLayer = this.map.createStaticLayer("Below Player", tileset, 0, 0);
 
-        this.worldLayer = this.map.createStaticLayer("LevelOneWorld", tileset, 0, 0);
+        this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
         this.worldLayer.setCollisionByProperty({ collides: true });
 
 
@@ -161,7 +165,7 @@ export default class MainScene extends Phaser.Scene {
 
     checkGameIsReadyToBegin(command: RequestJoinGame, client: any) {
         const playerCount = this.nengiInstance.clients.toArray().length;
-        const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === "human_spawn_point");
+        const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === "Spawn Point");
 
         console.log(`Checking whether game is ready to start with ${playerCount} players, and ${this.lobbyMinimum} minimum`);
 

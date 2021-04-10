@@ -14,8 +14,8 @@ export const clientFPS = 60
 export const phaserGameConfig: Phaser.Types.Core.GameConfig = {
     title: "Game",
 
-    width: 1280,
-    height: 720,
+    width: 1920,
+    height: 1080,
     physics: {
       default: "arcade",
       arcade: {

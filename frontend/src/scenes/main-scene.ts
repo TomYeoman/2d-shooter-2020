@@ -17,7 +17,8 @@ export class MainScene extends Phaser.Scene {
   nengiClient: ExtendedNengiTypes.Client;
   simulator: Simulator;
   last_ts: number
-  levelName = "zm_castle";
+
+  levelName = "spawn_island";
 
   constructor() {
     super({});
@@ -33,7 +34,7 @@ export class MainScene extends Phaser.Scene {
     this.load.image("player", "survivor-shotgun.png");
 
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
-    this.load.tilemapTiledJSON(this.levelName, "zm_castle.json");
+    this.load.tilemapTiledJSON(this.levelName, this.levelName + ".json");
   }
 
   public create(data: any) {
@@ -54,7 +55,7 @@ export class MainScene extends Phaser.Scene {
 
     //@ts-ignore
 
-    this.worldLayer = this.map.createStaticLayer("LevelOneWorld", tileset, 0, 0);
+    this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
     // this.worldLayer.setCollisionByProperty({ collides: true });
 
     // ------------ NENGI ------------------//
