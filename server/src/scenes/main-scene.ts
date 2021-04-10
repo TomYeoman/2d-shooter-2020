@@ -7,7 +7,7 @@ import nengiConfig from "../../../common/config/nengiConfig";
 // import { LobbyManager } from "../game/LobbyManager";
 import { commandTypes, lobbyState, messageTypes, SCENE_NAMES } from "../../../common/types/types";
 import RequestJoinGame from "../../../common/command/RequestJoinGame";
-import PlayerGraphicServer from "../../../common/graphics/PlayerGraphicServer";
+import PlayerGraphicServer from "../graphics/PlayerGraphicServer";
 import LobbyStateMessage from "../../../common/message/LobbyStateMessage";
 import PlayerEntity from "../../../common/entity/PlayerEntity";
 import Identity from "../../../common/message/Identity";
@@ -31,7 +31,7 @@ export default class MainScene extends Phaser.Scene {
     sceneName = "demo-scene"
     timeRemaining = -1
     state: lobbyState
-    lobbyMinimum = 2
+    lobbyMinimum = 1
     phaserInstance: Phaser.Scene
     playerGraphics: Map<number, PlayerGraphicServer>
     hasGameStarted = false

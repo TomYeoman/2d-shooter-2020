@@ -1,4 +1,4 @@
-import EasyStar from "easystarjs"
+import EasyStar from "easystarjs";
 
 export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
     speed: number
@@ -8,8 +8,8 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
     tickCount = 0
     name: string
     type: string
-    health: number = 100
-    deathCallback : (killerEntityId:number, botEntityId: number) => {}
+    health = 100
+    deathCallback: (killerEntityId: number, botEntityId: number) => {}
 
     constructor(
         scene: Phaser.Scene,
@@ -19,63 +19,64 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
         bots: Map<number, BotGraphicServer>,
         finder: EasyStar.js,
         name: string,
-        deathCallback: (killerEntityId:number, botEntityId: number) => {}
+        deathCallback: (killerEntityId: number, botEntityId: number) => {}
     ) {
 
-        super(scene, startX, startY, "zombie")
-        scene.add.existing(this)
-        scene.physics.add.existing(this)
+        super(scene, startX, startY, "zombie");
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
 
         // Commom Graphics Info
-        this.name = name
-        this.type = "BOT"
+        this.name = name;
+        this.type = "BOT";
 
-        this.deathCallback = deathCallback
+        this.deathCallback = deathCallback;
 
-        this.setCircle(10)
+        this.setSize(100,100)
+        this.setDisplaySize(100,100)
 
-        function randomIntFromInterval(min:number, max:number) { // min and max included
+        function randomIntFromInterval(min: number, max: number) { // min and max included
           return Math.floor(Math.random() * (max - min + 1) + min);
         }
 
-        this.finder = finder
-        this.speed = randomIntFromInterval(10, 50)
-        this.associatedEntityId = associatedEntityId
+        this.finder = finder;
+        this.speed = randomIntFromInterval(50, 150);
+        this.associatedEntityId = associatedEntityId;
 
         // this.body.bounce.x = 1
         // this.body.setMass(100)
 
         bots.forEach((bot) => {
             scene.physics.add.collider(this, bot);
-        })
+        });
 
     }
 
-    public moveBot(nextPath: { x: number, y: number }) {
+    public moveBot(nextPath: { x: number; y: number }) {
 
         // this.setVelocityX(0)
         // this.setVelocityX(0)
 
-        let nextPathTileX = nextPath.x
-        let nextPathTileY = nextPath.y
-        let currBotTileX = Math.floor(this.x / 32)
-        let currBotTileY = Math.floor(this.y / 32)
+        const nextPathTileX = nextPath.x;
+        const nextPathTileY = nextPath.y;
+        const currBotTileX = Math.floor(this.x / 32);
+        const currBotTileY = Math.floor(this.y / 32);
 
         // console.log(`Recieved path of X${nextPathTileX}, Y: ${nextPathTileX}, SpriteX: ${currBotTileX}, SpriteY: ${currBotTileY}`)
         if (nextPathTileX > currBotTileX) {
-            this.setVelocityX(this.speed)
+            this.setVelocityX(this.speed);
         }
 
         if (nextPathTileX < currBotTileX) {
-            this.setVelocityX(-this.speed)
+            this.setVelocityX(-this.speed);
         }
 
         if (nextPathTileY > currBotTileY) {
-            this.setVelocityY(this.speed)
+            this.setVelocityY(this.speed);
         }
 
         if (nextPathTileY < currBotTileY) {
-            this.setVelocityY(-this.speed)
+            this.setVelocityY(-this.speed);
         }
     }
 
@@ -83,8 +84,8 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         // 10% chance of actually re-calculating path per frame
         if (Math.random() < 0.05) {
-            let fromX = Math.floor(this.x /32)
-            let fromY = Math.floor(this.y / 32)
+            const fromX = Math.floor(this.x /32);
+            const fromY = Math.floor(this.y / 32);
 
             // console.log(`Bot ${index} Pathing to player at ${clientID} at X:${toX}, Y: ${toY}`)
 
@@ -95,7 +96,7 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
                     // console.log(`Moving to X:${path[0].x}, Y:${path[0].y + 32}`)
                     if (path.length) {
                         // console.log(path)
-                        this.moveBot(path[1])
+                        this.moveBot(path[1]);
                 }
 
                 }
@@ -107,16 +108,16 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite{
     }
 
     public takeDamage(damagerEntityId: number) {
-        this.health -= 25
+        this.health -= 25;
 
 
         // TODO create correct event system soon?
         if (this.health <= 0) {
             // console.log("Bot killed")
-            return this.deathCallback(damagerEntityId, this.associatedEntityId)
+            return this.deathCallback(damagerEntityId, this.associatedEntityId);
         }
 
-        console.log(`bot ${this.name} new health ${this.health}`)
+        console.log(`bot ${this.name} new health ${this.health}`);
     }
 }
 

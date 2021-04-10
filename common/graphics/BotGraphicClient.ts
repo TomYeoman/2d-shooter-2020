@@ -6,6 +6,7 @@ export default class BotGraphicClient extends Phaser.GameObjects.Sprite  {
         y: number,
     ) {
         super(scene, x, y, "zombie")
-        this.scale = 0.3
+        this.setDisplaySize(50,50)
+
     }
 }

@@ -56,7 +56,7 @@ class Simulator {
         }
 
         if (entity.protocol.name === entityTypes.BULLET_ENTITY) {
-            let newEntity = new BulletEntity(entity.x, entity.y)
+            let newEntity = new BulletEntity(entity.x, entity.y, entity.rotation)
             Object.assign(newEntity, entity)
             this.entities.set(newEntity.nid, newEntity)
             this.renderer.createEntity(entity)
@@ -143,6 +143,7 @@ class Simulator {
                 this.nengiClient.addCommand(new FireCommand(mouseX, mouseY))
             }
 
+            console.log(rotation)
             this.nengiClient.addCommand(new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta))
 
         } else {

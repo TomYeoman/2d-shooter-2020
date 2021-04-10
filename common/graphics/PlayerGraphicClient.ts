@@ -6,6 +6,6 @@ export default class PlayerGraphicClient extends Phaser.GameObjects.Sprite  {
         y: number,
     ) {
         super(scene, x, y, "player")
-        this.scale = 0.3
+        this.setDisplaySize(50, 50)
     }
 }

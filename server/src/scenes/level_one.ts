@@ -7,12 +7,12 @@ import nengiConfig from "../../../common/config/nengiConfig";
 import LobbyStateMessage from "../../../common/message/LobbyStateMessage";
 import FireCommand from "../../../common/command/FireCommand";
 import PlayerEntity from "../../../common/entity/PlayerEntity";
-import PlayerGraphicServer from "../../../common/graphics/PlayerGraphicServer";
+import PlayerGraphicServer from "../graphics/PlayerGraphicServer";
 import Identity from "../../../common/message/Identity";
 import nengi from "nengi";
 import RequestJoinGame from "../../../common/command/RequestJoinGame";
 import EasyStar from "easystarjs";
-import BotGraphicServer from "../../../common/graphics/BotGraphicServer";
+import BotGraphicServer from "../graphics/BotGraphicServer";
 import BotEntity from "../../../common/entity/BotEntity";
 /*
 When we start a new level, we need to
@@ -49,10 +49,12 @@ export default class LevelOne extends Phaser.Scene {
         const mapPath = path.join(__dirname, "..", "assets", `${this.levelName}.json`);
 
         const survivorShotgunPath = path.join(__dirname, "..", "assets", "survivor-shotgun.png");
+        const bulletPath = path.join(__dirname, "..", "assets", "bullet.png");
         const zombiePath = path.join(__dirname, "..", "assets", "zombie.png");
 
         this.load.image("zombie", zombiePath);
         this.load.image("player", survivorShotgunPath);
+        this.load.image("bullet", bulletPath);
 
         this.load.image("tiles", imgPath);
         this.load.tilemapTiledJSON(this.levelName, mapPath);

@@ -18,6 +18,7 @@ export class LevelOne extends Phaser.Scene {
 
     this.load.image("player", "survivor-shotgun.png");
     this.load.image("zombie", "zombie.png");
+    this.load.image("bullet", "bullet.png");
 
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
     this.load.tilemapTiledJSON(this.levelName, "zm_castle.json");

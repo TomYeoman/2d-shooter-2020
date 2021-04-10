@@ -6,9 +6,10 @@ class BulletEntity {
     nid: number
     ntype: string
 
-    constructor(private x:number, private y:number ) {
+    constructor(private x:number, private y:number, private rotation:number ) {
         this.x = x
         this.y = y
+        this.rotation = rotation
     }
 
 }
@@ -17,6 +18,7 @@ class BulletEntity {
 BulletEntity.protocol = {
     x: { type: nengi.Float32, interp: true },
     y: { type: nengi.Float32, interp: true },
+    rotation: { type: nengi.Float32, interp: true },
 }
 
 export default BulletEntity
