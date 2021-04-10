@@ -21,6 +21,12 @@ export enum messageTypes {
     IDENTITY = "IDENTITY",
 }
 
+export enum entityTypes {
+    PLAYER_ENTITY = "PLAYER_ENTITY",
+    BULLET_ENTITY = "BULLET_ENTITY",
+    BOT_ENTITY = "BOT_ENTITY",
+}
+
 export enum SCENE_NAMES {
     LOADING = "LOADING",
     MAIN = "MAIN",

@@ -1,15 +1,17 @@
 
 import nengi from 'nengi'
-import {PlayerGraphic} from '../../common/graphics/PlayerGraphic'
-import { messageTypes } from '../../common/types/types'
+import PlayerGraphicClient from '../../common/graphics/PlayerGraphicClient'
+import BotGraphicClient from '../../common/graphics/BotGraphicClient'
+import { entityTypes, messageTypes } from '../../common/types/types'
 import { SCENE_NAMES } from './game/index'
+import BulletGraphicClient from '../../common/graphics/BulletGraphicClient'
 
 class PhaserEntityRenderer {
 
     entities: Map<number, any>
     scene: Phaser.Scene
     myId: string
-    myEntity: any
+    myEntity: Phaser.GameObjects.Sprite
     sceneMap: Phaser.Tilemaps.Tilemap
     stageText: Phaser.GameObjects.Text
 
@@ -22,8 +24,9 @@ class PhaserEntityRenderer {
     createEntity(entity: any) {
         console.log(`creating new ${entity.protocol.name} entity ( Renderer )`)
 
-        if (entity.protocol.name === 'PlayerCharacter') {
-            const clientEntity = new PlayerGraphic(this.scene, entity.x, entity.y)
+        if (entity.protocol.name === entityTypes.PLAYER_ENTITY) {
+            const clientEntity = new PlayerGraphicClient(this.scene, entity.x, entity.y)
+            this.scene.add.existing(clientEntity)
             this.entities.set(entity.nid, clientEntity)
 
             // We may already have an identity, in which case follow at point of recieving entity
@@ -31,6 +34,18 @@ class PhaserEntityRenderer {
                 this.myEntity = clientEntity
                 this.setupCamera()
             }
+        }
+
+        if (entity.protocol.name === entityTypes.BOT_ENTITY) {
+            const botEntity = new BotGraphicClient(this.scene, entity.x, entity.y)
+            this.scene.add.existing(botEntity)
+            this.entities.set(entity.nid, botEntity)
+        }
+
+        if (entity.protocol.name === entityTypes.BULLET_ENTITY) {
+            const bulletEntity = new BulletGraphicClient(this.scene, entity.x, entity.y)
+            this.scene.add.existing(bulletEntity)
+            this.entities.set(entity.nid, bulletEntity)
         }
 
     }
@@ -45,13 +60,13 @@ class PhaserEntityRenderer {
 
     setupCamera() {
         const camera = this.scene.cameras.main;
-        camera.startFollow(this.myEntity.sprite);
+        camera.startFollow(this.myEntity);
         camera.setBounds(0, 0, this.sceneMap.widthInPixels, this.sceneMap.heightInPixels);
     }
 
     updateEntity(update: any) {
         const entity = this.entities.get(update.nid)
-        entity.sprite[update.prop] = update.value
+        entity[update.prop] = update.value
         // debugger
     }
 
@@ -59,7 +74,7 @@ class PhaserEntityRenderer {
         const entity = this.entities.get(entityId)
 
         if (entity) {
-            entity.sprite.destroy()
+            entity.destroy()
             this.entities.delete(entityId)
         } else {
             console.log(`Rendered tried to delete entity ${entityId} that doesn't exist `)
@@ -78,8 +93,8 @@ class PhaserEntityRenderer {
         const pointer = this.scene.input.activePointer
 
         return {
-            x: pointer.worldX,
-            y: pointer.worldY,
+            mouseX: pointer.worldX,
+            mouseY: pointer.worldY,
         }
 
     }

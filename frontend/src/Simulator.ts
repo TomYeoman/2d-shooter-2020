@@ -1,11 +1,14 @@
-import PlayerCharacter from '../../common/entity/PlayerCharacter'
+import PlayerEntity from '../../common/entity/PlayerEntity'
 
 import InputSystem from "./InputSystem"
 import MoveCommand from '../../common/command/MoveCommand'
 import nengi from 'nengi'
 import PhaserEntityRenderer from './PhaserEntityRenderer'
-import { lobbyState, messageTypes } from '../../common/types/types'
+import { entityTypes, lobbyState, messageTypes } from '../../common/types/types'
 import LobbyStateMessage from '../../common/message/LobbyStateMessage'
+import FireCommand from '../../common/command/FireCommand'
+import BotEntity from '../../common/entity/BotEntity'
+import BulletEntity from '../../common/entity/BulletEntity'
 
 class Simulator {
 
@@ -15,7 +18,7 @@ class Simulator {
     renderer: PhaserEntityRenderer
 
     entityIdSelf : number
-    myEntity : PlayerCharacter | null
+    myEntity : PlayerEntity | null
 
     constructor(nengiClient: nengi.Client, phaserInstance: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
         this.nengiClient = nengiClient
@@ -32,8 +35,8 @@ class Simulator {
     createEntity(entity: any) {
         console.log(`creating new ${entity.protocol.name} entity (Simulator)`)
 
-        if (entity.protocol.name === 'PlayerCharacter') {
-            let newEntity = new PlayerCharacter(entity.x, entity.y)
+        if (entity.protocol.name === entityTypes.PLAYER_ENTITY) {
+            let newEntity = new PlayerEntity(entity.x, entity.y)
             Object.assign(newEntity, entity)
             this.entities.set(newEntity.nid, newEntity)
             this.renderer.createEntity(entity)
@@ -43,6 +46,20 @@ class Simulator {
                 console.log(`Discovered local version of my remote entity, with id ${entity.nid}`)
                 this.myEntity = newEntity
             }
+        }
+
+        if (entity.protocol.name === entityTypes.BOT_ENTITY) {
+            let newEntity = new BotEntity(entity.x, entity.y)
+            Object.assign(newEntity, entity)
+            this.entities.set(newEntity.nid, newEntity)
+            this.renderer.createEntity(entity)
+        }
+
+        if (entity.protocol.name === entityTypes.BULLET_ENTITY) {
+            let newEntity = new BulletEntity(entity.x, entity.y)
+            Object.assign(newEntity, entity)
+            this.entities.set(newEntity.nid, newEntity)
+            this.renderer.createEntity(entity)
         }
     }
 
@@ -114,29 +131,20 @@ class Simulator {
             let rotation = 0
 
             // calculate the direction our character is facing
+            const { mouseX, mouseY } = this.renderer.getMouseCoords()
 
-            const { x, y } = this.renderer.getMouseCoords()
-            // const spriteX = (-this.renderer.scene.cameras.main.x + this.renderer.myEntity.sprite.x)
-            // const spriteY = (-this.renderer.scene.cameras.main.y + this.renderer.myEntity.sprite.y)
-            const spriteX = this.renderer.myEntity.sprite.x
-            const spriteY =  this.renderer.myEntity.sprite.y
+            const spriteX = this.renderer.myEntity.x
+            const spriteY =  this.renderer.myEntity.y
 
-            // console.log(`mouse x ${x}, y${y}`)
-            // console.log(`sprite x ${spriteX}, sprite y${spriteY}`)
-            const dx = x - spriteX
-            const dy = y - spriteY
+            rotation = Math.atan2( mouseY - spriteY, mouseX - spriteX)
 
-            // console.log(`char X ${this.renderer.myEntity.sprite.x}, char Y: ${this.renderer.myEntity.sprite.y}`)
-            // console.log(`dx ${dx}, dy: ${dy}`)
+            // Send this frames movement info
+            if (input.mouseDown) {
+                this.nengiClient.addCommand(new FireCommand(mouseX, mouseY))
+            }
 
-            // console.log(dx)
-            // console.log(dy)
-            rotation = Math.atan2(dy, dx)
+            this.nengiClient.addCommand(new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta))
 
-            // console.log(rotation)
-
-            const moveCommand = new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta)
-            this.nengiClient.addCommand(moveCommand)
         } else {
             console.log("No entity found for player to move")
         }

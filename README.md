@@ -53,3 +53,7 @@ Game Ideas
 - FFA - most kills
 - Battle Royale
 - Boss Survival
+
+
+Zombies -
+ - one in X drops pet, or other special for collection log

@@ -1,16 +1,16 @@
 import nengi from 'nengi'
 
 class FireCommand {
-    constructor(private x:number, private y:number) {
-        this.x = x
-        this.y = y
+    constructor(public mouseX:number, public mouseY:number) {
+        this.mouseX = mouseX
+        this.mouseY = mouseY
     }
 }
 
 //@ts-ignore
 FireCommand.protocol = {
-    x: nengi.Int32,
-    y: nengi.Int32
+    mouseX: nengi.Int32,
+    mouseY: nengi.Int32
 }
 
 export default FireCommand

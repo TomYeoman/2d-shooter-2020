@@ -2,15 +2,13 @@ import nengi from 'nengi'
 import Identity from '../message/Identity'
 import NetLog from '../message/NetLog'
 import LobbyStateMessage from '../message/LobbyStateMessage'
-import PlayerCharacter from '../entity/PlayerCharacter'
-// import PlayerCharacter from './PlayerCharacter.js'
-// import Asteroid from './Asteroid.js'
-// import PlayerInput from './PlayerInput.js'
-// import Identity from './Identity.js'
+import PlayerEntity from '../entity/PlayerEntity'
+import BotEntity from '../entity/BotEntity'
+import BulletEntity from '../entity/BulletEntity'
 import MoveCommand from '../command/MoveCommand'
 import FireCommand from '../command/FireCommand'
 
-import {commandTypes, messageTypes} from '../types/types'
+import {commandTypes, messageTypes, entityTypes} from '../types/types'
 import RequestSpawn from '../command/RequestSpawn'
 import RequestJoinGame from '../command/RequestJoinGame'
 
@@ -28,7 +26,9 @@ const config:any = {
 
     protocols: {
         entities: [
-            ['PlayerCharacter', PlayerCharacter],
+            [entityTypes.PLAYER_ENTITY, PlayerEntity],
+            [entityTypes.BULLET_ENTITY, BulletEntity],
+            [entityTypes.BOT_ENTITY, BotEntity],
             // ['Asteroid', Asteroid]
         ],
         localMessages: [],

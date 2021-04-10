@@ -11,12 +11,16 @@ export class LevelOne extends Phaser.Scene {
   nengiClient: ExtendedNengiTypes.Client;
   simulator: Simulator;
   last_ts: number
+  levelName = "zm_castle";
 
   public preload() {
     console.log("Pre-load level one")
 
+    this.load.image("player", "survivor-shotgun.png");
+    this.load.image("zombie", "zombie.png");
+
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
-    this.load.tilemapTiledJSON("map2", "minigame_1.json");
+    this.load.tilemapTiledJSON(this.levelName, "zm_castle.json");
 
   }
 
@@ -25,7 +29,7 @@ export class LevelOne extends Phaser.Scene {
     console.log("Create level one")
     this.nengiClient = nengiClient
 
-    this.map = this.make.tilemap({ key: "map2" });
+    this.map = this.make.tilemap({ key: this.levelName });
 
     const tileset = this.map.addTilesetImage(
       "tuxmon-sample-32px-extruded",
@@ -42,8 +46,8 @@ export class LevelOne extends Phaser.Scene {
     );
 
     //@ts-ignore
-    this.worldLayer = this.map.createStaticLayer("World", tileset, 0, 0);
-    this.worldLayer.setCollisionByProperty({ collides: true });
+    this.worldLayer = this.map.createStaticLayer("LevelOneWorld", tileset, 0, 0);
+    // this.worldLayer.setCollisionByProperty({ collides: true });
     this.simulator = new Simulator(this.nengiClient, this, this.map);
 
     const RequestSpawnCommand = new RequestSpawn("")
@@ -70,7 +74,7 @@ export class LevelOne extends Phaser.Scene {
       })
 
       snapshot.updateEntities.forEach((update: any) => {
-        console.log(`Updating entity ${update.nid}`)
+        // console.log(`Updating entity ${update.nid}`)
         this.simulator.updateEntity(update)
       })
 
