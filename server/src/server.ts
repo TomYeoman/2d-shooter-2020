@@ -1,6 +1,5 @@
 import errorHandler from "errorhandler";
 import app from "./app";
-// import config from "./game/config";
 
 require("@geckos.io/phaser-on-nodejs");
 

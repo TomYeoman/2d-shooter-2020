@@ -9,6 +9,8 @@ import LobbyStateMessage from '../../common/message/LobbyStateMessage'
 import FireCommand from '../../common/command/FireCommand'
 import BotEntity from '../../common/entity/BotEntity'
 import BulletEntity from '../../common/entity/BulletEntity'
+import NetLog from '../../common/message/NetLog'
+import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
 
 class Simulator {
 
@@ -83,20 +85,36 @@ class Simulator {
     processMessage(message: any) {
 
         if (message.protocol.name === messageTypes.LOBBY_STATE_MESSAGE) {
-            const lobbyMessage: LobbyStateMessage = message
+            const typedMessage: LobbyStateMessage = message
 
             console.log("Recieved update on lobby state")
 
-            if (lobbyMessage.state === lobbyState.WAITING_FOR_PLAYERS) {
-                this.renderer.displayText(`Waiting for players, currently ${lobbyMessage.playerCount} / ${lobbyMessage.lobbyMinimum}` )
+            if (typedMessage.state === lobbyState.WAITING_FOR_PLAYERS) {
+                this.renderer.displayText(`Waiting for players, currently ${typedMessage.playerCount} / ${typedMessage.lobbyMinimum}` )
             }
 
-            if (lobbyMessage.state === lobbyState.IN_PROGRESS) {
+            if (typedMessage.state === lobbyState.IN_PROGRESS) {
                 // LOAD THE MAP
-                console.log(`Attempting to load scene ${lobbyMessage.scene}`)
-                this.renderer.loadLevel(lobbyMessage.scene, this.nengiClient)
+                console.log(`Attempting to load scene ${typedMessage.scene}`)
+                this.renderer.loadLevel(typedMessage.scene, this.nengiClient)
             }
 
+        }
+
+        if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
+            const typedMessage: ZombieWaveMessage = message
+            this.renderer.displayWaveHud(typedMessage)
+
+            console.log("Recieved update on zombie waves")
+            console.log(typedMessage)
+
+        }
+
+        if (message.protocol.name === messageTypes.NET_LOG) {
+            const typedMessage: NetLog = message
+
+            console.log("Recieved NET_LOG message")
+            console.log(typedMessage)
         }
 
         if (message.protocol.name === messageTypes.IDENTITY) {
@@ -143,7 +161,7 @@ class Simulator {
                 this.nengiClient.addCommand(new FireCommand(mouseX, mouseY))
             }
 
-            console.log(rotation)
+            // console.log(rotation)
             this.nengiClient.addCommand(new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta))
 
         } else {

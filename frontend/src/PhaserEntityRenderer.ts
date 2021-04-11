@@ -5,6 +5,7 @@ import BotGraphicClient from '../../common/graphics/BotGraphicClient'
 import { entityTypes, messageTypes } from '../../common/types/types'
 import { SCENE_NAMES } from './game/index'
 import BulletGraphicClient from '../../common/graphics/BulletGraphicClient'
+import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
 
 class PhaserEntityRenderer {
 
@@ -62,6 +63,7 @@ class PhaserEntityRenderer {
         const camera = this.scene.cameras.main;
         camera.startFollow(this.myEntity);
         camera.setBounds(0, 0, this.sceneMap.widthInPixels, this.sceneMap.heightInPixels);
+        // camera.zoom= 2
     }
 
     updateEntity(update: any) {
@@ -116,6 +118,41 @@ class PhaserEntityRenderer {
                 .setOrigin(0.5, 0);
         } else {
             this.stageText.text = text
+        }
+
+        // const loadingBar = this.scene.add.graphics();
+        // loadingBar.clear();
+        // loadingBar.fillStyle(0xffffff, 1);
+        // loadingBar.fillRect(width / 2 - 375, height / 2 - 25, 750 * value, 50);
+        // const mod = Phaser.Math.FloorTo(((value * 100) % 3) + 1, 0);
+        // const text = `Loading${".".repeat(mod)}${mod <= 2 ? " ".repeat(3 - mod) : ""}`;
+
+    }
+
+    displayWaveHud(zombieWaveMessage: ZombieWaveMessage) {
+
+        const textStyle:any = {
+            fill: "#ffffff",
+            align: "left",
+            fontSize: 15,
+            fontStyle: "bold"
+        };
+
+        const message = `
+        Game State : ${zombieWaveMessage.gameStatus}
+        Current wave : ${zombieWaveMessage.currentWave}
+        Zombies      : ${zombieWaveMessage.remainingZombiesInWave} / ${zombieWaveMessage.waveSize}
+        Players      : ${zombieWaveMessage.playersAlive} / ${zombieWaveMessage.playersTotal}
+    `
+
+        if (!this.stageText) {
+            this.stageText = this.scene.add
+                .text(10, 10, message, textStyle)
+                // .setOrigin(0.5, 0);
+                .setScrollFactor(0)
+
+        } else {
+            this.stageText.text = message
         }
 
         // const loadingBar = this.scene.add.graphics();

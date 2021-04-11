@@ -2,6 +2,7 @@ import nengi from 'nengi'
 import Identity from '../message/Identity'
 import NetLog from '../message/NetLog'
 import LobbyStateMessage from '../message/LobbyStateMessage'
+import ZombieWaveMessage from '../message/ZombieWaveMessage'
 import PlayerEntity from '../entity/PlayerEntity'
 import BotEntity from '../entity/BotEntity'
 import BulletEntity from '../entity/BulletEntity'
@@ -33,9 +34,10 @@ const config:any = {
         ],
         localMessages: [],
         messages: [
-            ['NetLog', NetLog],
+            [messageTypes.NET_LOG, NetLog],
             [messageTypes.IDENTITY, Identity],
-            [messageTypes.LOBBY_STATE_MESSAGE, LobbyStateMessage]
+            [messageTypes.LOBBY_STATE_MESSAGE, LobbyStateMessage],
+            [messageTypes.ZOMBIE_WAVE_MESSAGE, ZombieWaveMessage]
         ],
         commands: [
             // ['PlayerInput', PlayerInput]

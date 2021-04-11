@@ -14,6 +14,7 @@ import RequestJoinGame from "../../../common/command/RequestJoinGame";
 import EasyStar from "easystarjs";
 import BotGraphicServer from "../graphics/BotGraphicServer";
 import BotEntity from "../../../common/entity/BotEntity";
+import { BotSystem } from "../systems/BotSystem";
 /*
 When we start a new level, we need to
 
@@ -31,13 +32,15 @@ export default class LevelOne extends Phaser.Scene {
     private nengiInstance: ExtendedNengiTypes.Instance;
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
     map: Phaser.Tilemaps.Tilemap
-
+    tileset: Phaser.Tilemaps.Tileset
     // AI
     finder: any;
 
 
     playerGraphics: Map<number, PlayerGraphicServer>
-    botGraphics: Map<number, BotGraphicServer>
+    // botGraphics: Map<number, BotGraphicServer>
+
+    botSystem: BotSystem
 
 
     // ------------ SETUP ------------//
@@ -69,27 +72,23 @@ export default class LevelOne extends Phaser.Scene {
         // Map
         this.nengiInstance = nengiInstance;
         this.playerGraphics = new Map();
-        this.botGraphics = new Map();
+        // this.botGraphics = new Map();
 
 
         this.map = this.make.tilemap({ key: this.levelName });
 
         // Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
         // Phaser's cache (i.e. the name you used in preload)
-        const tileset = this.map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
+        this.tileset = this.map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
         // Parameters: layer name (or index) from Tiled, tileset, x, y
         // const belowLayer = this.map.createStaticLayer("Below Player", tileset, 0, 0);
 
-        this.worldLayer = this.map.createStaticLayer("LevelOneWorld", tileset, 0, 0);
+        this.worldLayer = this.map.createStaticLayer("LevelOneWorld", this.tileset, 0, 0);
         this.worldLayer.setCollisionByProperty({ collides: true });
 
-        console.log("Setting up pathfinding for level one");
-
-        this.initialisePathing(tileset);
 
         console.log("Spawning players into level one");
-
         this.nengiInstance.clients.forEach(client => {
             // Client was already created in main lobby, and we therefore need to delete
             // the old entity
@@ -120,26 +119,24 @@ export default class LevelOne extends Phaser.Scene {
         });
 
 
-        // Add some bots to the game
-        console.log("Getting spawsn");
+        this.botSystem = new BotSystem(this, this.map, this.worldLayer, this.tileset, this.nengiInstance, this.playerGraphics);
+        this.botSystem.beginGame();
 
-        const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === "zombie_spawn_1");
+        // console.log(spawnPoint.x);
+        // console.log(spawnPoint.y);
+        // for (let index = 0; index < 2; index++) {
 
-        console.log(spawnPoint.x);
-        console.log(spawnPoint.y);
-        for (let index = 0; index < 100; index++) {
+        //     console.log("Spawning bot");
+        //     // Create a new entity for nengi to track
+        //     const entityBot = new BotEntity(spawnPoint.x, spawnPoint.y);
+        //     this.nengiInstance.addEntity(entityBot);
 
-            console.log("Spawning bot");
-            // Create a new entity for nengi to track
-            const entityBot = new BotEntity(spawnPoint.x, spawnPoint.y);
-            this.nengiInstance.addEntity(entityBot);
-
-            // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-            console.log("about to creat grahpic");
-            const botGraphic = new BotGraphicServer(this, this.worldLayer, entityBot.nid, entityBot.x, entityBot.y, this.botGraphics, this.finder, index.toString(), this.onBotDeath);
-            console.log("created graphic");
-            this.botGraphics.set(entityBot.nid, botGraphic);
-        }
+        //     // Create a new phaser bot and link to entity, we'll apply physics to for each path check
+        //     console.log("about to creat grahpic");
+        //     const botGraphic = new BotGraphicServer(this, this.worldLayer, entityBot.nid, entityBot.x, entityBot.y, this.botGraphics, this.finder, index.toString(), this.onBotDeath);
+        //     console.log("created graphic");
+        //     this.botGraphics.set(entityBot.nid, botGraphic);
+        // }
 
         setInterval(() => {
             this.handleInputs();
@@ -148,60 +145,63 @@ export default class LevelOne extends Phaser.Scene {
 
     }
 
-    onBotDeath = (killerEntityId: number, botEntityId: number): any => {
-        // console.log("Method not implemented")
+    // onBotDeath = (killerEntityId: number, botEntityId: number): any => {
+    //     // console.log("Method not implemented")
 
-        console.log(`Bot ${botEntityId} was killed by ${killerEntityId} , removing from level`);
+    //     console.log(`Bot ${botEntityId} was killed by ${killerEntityId} , removing from level`);
 
-        // Remove nengi entity
-        const botEntity = this.nengiInstance.getEntity(botEntityId);
-        this.nengiInstance.removeEntity(botEntity);
+    //     // Remove nengi entity
+    //     const botEntity = this.nengiInstance.getEntity(botEntityId);
+    //     this.nengiInstance.removeEntity(botEntity);
 
-        // Delete phaser representation
+    //     // Delete phaser representation
 
-        const bot = this.botGraphics.get(botEntityId);
-        if (!bot) {
-            throw new Error("Couldn't find the killed bots phaser entity");
-        }
+    //     const bot = this.botGraphics.get(botEntityId);
+    //     if (!bot) {
+    //         throw new Error("Couldn't find the killed bots phaser entity");
+    //     }
 
-        bot.destroy();
-        this.botGraphics.delete(bot.associatedEntityId);
-    }
+    //     bot.destroy();
+    //     this.botGraphics.delete(bot.associatedEntityId);
+    // }
 
     // ------------ MAIN LOOP ------------//
     update() {
 
-        let target: any;
-        let isReadyToPath = false;
+        // let target: any;
+        // let isReadyToPath = false;
 
-        // TODO find closest client instead
-        this.nengiInstance.clients.forEach((client) => {
+        // // TODO find closest client instead
+        // this.nengiInstance.clients.forEach((client) => {
 
-            const entitySelf = client.entitySelf;
-            if (!entitySelf) {
-                console.log("No clients to path find to yet");
-            } else {
-                isReadyToPath = true;
-                target = client;
-            }
-        });
+        //     const entitySelf = client.entitySelf;
+        //     if (!entitySelf) {
+        //         console.log("No clients to path find to yet");
+        //     } else {
+        //         isReadyToPath = true;
+        //         target = client;
+        //     }
+        // });
 
-        if (isReadyToPath) {
-            this.botGraphics.forEach((bot: BotGraphicServer, index) => {
-                bot.moveToPlayer(target.entitySelf.x, target.entitySelf.y);
+        // if (isReadyToPath) {
+        //     this.botGraphics.forEach((bot: BotGraphicServer, index) => {
+        //         bot.moveToPlayer(target.entitySelf.x, target.entitySelf.y);
 
-                // Update over the wire entity, with phasers rending of it
-                const associatedNengiEntity = this.nengiInstance.getEntity(bot.associatedEntityId);
+        //         // Update over the wire entity, with phasers rending of it
+        //         const associatedNengiEntity = this.nengiInstance.getEntity(bot.associatedEntityId);
 
-                if (associatedNengiEntity) {
-                    // console.log(`Found associated nengi entity, sending phaser position over X${ bot.sprite.x}, Y:${ bot.sprite.y}`)
-                    associatedNengiEntity.x = bot.x;
-                    associatedNengiEntity.y = bot.y;
+        //         if (associatedNengiEntity) {
+        //             // console.log(`Found associated nengi entity, sending phaser position over X${ bot.sprite.x}, Y:${ bot.sprite.y}`)
+        //             associatedNengiEntity.x = bot.x;
+        //             associatedNengiEntity.y = bot.y;
 
-                    associatedNengiEntity.rotation = Math.atan2(target.entitySelf.y - bot.y, target.entitySelf.x - bot.x);
-                }
-            });
-        }
+        //             associatedNengiEntity.rotation = Math.atan2(target.entitySelf.y - bot.y, target.entitySelf.x - bot.x);
+        //         }
+        //     });
+        // }
+
+        this.botSystem.pathBots();
+
 
     }
 
@@ -285,59 +285,7 @@ export default class LevelOne extends Phaser.Scene {
         };
     }
 
-    initialisePathing(tileset: Phaser.Tilemaps.Tileset) {
 
-        try {
-
-            // SETUP PATHFINDING
-            this.finder = new EasyStar.js();
-            // this.finder.enableDiagonals();
-            this.finder.enableCornerCutting();
-
-            const getTileID = (x: number, y: number) => {
-                // console.log(`${x}, ${y}`);
-                const tile = this.map.getTileAt(x, y);
-                return tile.index;
-            };
-
-            const grid = [];
-            for (let y = 0; y < this.map.height; y++) {
-                const col = [];
-                for (let x = 0; x < this.map.width; x++) {
-                    // In each cell we store the ID of the tile, which corresponds
-                    // to its index in the tileset of the map (`ID" field in Tiled)`
-                    col.push(getTileID(x, y));
-                }
-                grid.push(col);
-            }
-
-            this.finder.setGrid(grid);
-            // this.finder.setIterati.onsPerCalculation(1000);
-
-            const tilepaths = this.map.tilesets[0];
-            const properties: any = tileset.tileProperties;
-
-            const acceptableTiles = [];
-
-            for (let i = tilepaths.firstgid - 1; i < tileset.total; i++) { // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
-                // acceptableTiles.push(i + 1);
-
-                if (!properties.hasOwnProperty(i)) {
-                    // If there is no property indicated at all, it means it's a walkable tile
-                    acceptableTiles.push(i+1);
-                    continue;
-                }
-
-                console.log(properties[i]);
-                if(!properties[i].collides) acceptableTiles.push(i+1);
-                // if(properties[i].cost) Game.finder.setTileCost(i+1, properties[i].cost); // If there is a cost attached to the tile, let's register it
-            }
-
-            this.finder.setAcceptableTiles(acceptableTiles);
-        } catch (e) {
-            console.log(e);
-        }
-    }
 
 
     commandMove(command: any, client: any) {
@@ -371,7 +319,7 @@ export default class LevelOne extends Phaser.Scene {
             clientEntityPhaser.fire(
                 command.mouseX,
                 command.mouseY,
-                this.botGraphics,
+                this.botSystem.botGraphicsMap,
             );
         }
     }
