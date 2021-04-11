@@ -41,7 +41,7 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         this.associatedEntityId = associatedEntityId;
         scene.physics.add.collider(this, worldLayer, cb);
-
+        this.body.immovable = true
 
         // super(scene, startX, startY, 5, 5, 0x9966ff)
         // this.setStrokeStyle(4, 0xefc53f)

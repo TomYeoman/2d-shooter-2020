@@ -20,6 +20,7 @@ export const phaserGameConfig: Phaser.Types.Core.GameConfig = {
       default: "arcade",
       arcade: {
         // debug: true,
+        gravity: { y: 0 } // Top down game, so no gravity
       },
     },
   };
