@@ -12,6 +12,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
     rotation = 0
     speed: number
     bulletGraphics: Map<number, any>
+    health = 100
 
     associatedEntityId: number
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
@@ -38,12 +39,13 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
+
         this.setSize(50,50)
         this.setDisplaySize(50, 50)
 
         console.log("Setting up collision with world");
         scene.physics.add.collider(this, worldLayer);
-
+     this.body.immovable = true
 
         // // Set a callback to update this entity, with current rendered position every
         // setInterval(() => {
@@ -157,5 +159,20 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
             associatedEntity.y = bullet.y;
             associatedEntity.rotation = bullet.rotation;
         });
+    }
+
+    public takeDamage(damagerEntityId: number) {
+        this.health -= 10;
+
+
+        // TODO create correct event system soon?
+        if (this.health <= 0) {
+            console.log("Human killed :(")
+            // return this.deathCallback(damagerEntityId, this.associatedEntityId);
+        }
+
+        // TODO - send a message to this client with their health
+
+        console.log(`bot ${this.name} new health ${this.health}`);
     }
 }
