@@ -4,6 +4,7 @@ import Phaser from "phaser";
 import BotGraphicServer from "./BotGraphicServer";
 import BulletGraphicServer from "./BulletGraphicServer";
 import BulletEntity from "../../../common/entity/BulletEntity";
+import ClientHudMessage from "../../../common/message/ClientHudMessage";
 
 export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
@@ -45,7 +46,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         console.log("Setting up collision with world");
         scene.physics.add.collider(this, worldLayer);
-     this.body.immovable = true
+        this.body.immovable = true
 
         // // Set a callback to update this entity, with current rendered position every
         // setInterval(() => {
@@ -167,12 +168,25 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         // TODO create correct event system soon?
         if (this.health <= 0) {
-            console.log("Human killed :(")
+            // console.log("Human killed :(")
             // return this.deathCallback(damagerEntityId, this.associatedEntityId);
         }
 
         // TODO - send a message to this client with their health
 
-        console.log(`bot ${this.name} new health ${this.health}`);
+        this.nengiInstance.clients.forEach(client => {
+
+            // TODO - there must be a better way to dot his
+            if (client.entitySelf && client.entitySelf.nid === this.associatedEntityId) {
+                this.nengiInstance.message(new ClientHudMessage(
+                    this.health,
+                    "~",
+                    "Shredder",
+                ), client);
+            }
+
+        })
+
+        // console.log(`bot ${this.name} new health ${this.health}`);
     }
 }

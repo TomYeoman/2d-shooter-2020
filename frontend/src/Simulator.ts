@@ -11,6 +11,7 @@ import BotEntity from '../../common/entity/BotEntity'
 import BulletEntity from '../../common/entity/BulletEntity'
 import NetLog from '../../common/message/NetLog'
 import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
+import ClientHudMessage from '../../common/message/ClientHudMessage'
 
 class Simulator {
 
@@ -103,10 +104,20 @@ class Simulator {
 
         if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
             const typedMessage: ZombieWaveMessage = message
-            this.renderer.displayWaveHud(typedMessage)
 
             console.log("Recieved update on zombie waves")
             console.log(typedMessage)
+
+            this.renderer.displayWaveHud(typedMessage)
+        }
+
+        if (message.protocol.name === messageTypes.CLIENT_HUD_MESSAGE) {
+            const typedMessage: ClientHudMessage = message
+
+            console.log("Recieved update on player HUD")
+            console.log(typedMessage)
+
+            this.renderer.displayUserHUD(typedMessage)
 
         }
 

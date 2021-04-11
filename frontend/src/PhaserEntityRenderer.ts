@@ -6,6 +6,7 @@ import { entityTypes, messageTypes } from '../../common/types/types'
 import { SCENE_NAMES } from './game/index'
 import BulletGraphicClient from '../../common/graphics/BulletGraphicClient'
 import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
+import ClientHudMessage from '../../common/message/ClientHudMessage'
 
 class PhaserEntityRenderer {
 
@@ -14,6 +15,10 @@ class PhaserEntityRenderer {
     myId: string
     myEntity: Phaser.GameObjects.Sprite
     sceneMap: Phaser.Tilemaps.Tilemap
+
+    healthText: Phaser.GameObjects.Text
+    waveInfoText: Phaser.GameObjects.Text
+    hudText: Phaser.GameObjects.Text
     stageText: Phaser.GameObjects.Text
 
     constructor(scene: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap ) {
@@ -145,14 +150,14 @@ class PhaserEntityRenderer {
         Players      : ${zombieWaveMessage.playersAlive} / ${zombieWaveMessage.playersTotal}
     `
 
-        if (!this.stageText) {
-            this.stageText = this.scene.add
+        if (!this.waveInfoText) {
+            this.waveInfoText = this.scene.add
                 .text(10, 10, message, textStyle)
                 // .setOrigin(0.5, 0);
                 .setScrollFactor(0)
 
         } else {
-            this.stageText.text = message
+            this.waveInfoText.text = message
         }
 
         // const loadingBar = this.scene.add.graphics();
@@ -161,6 +166,66 @@ class PhaserEntityRenderer {
         // loadingBar.fillRect(width / 2 - 375, height / 2 - 25, 750 * value, 50);
         // const mod = Phaser.Math.FloorTo(((value * 100) % 3) + 1, 0);
         // const text = `Loading${".".repeat(mod)}${mod <= 2 ? " ".repeat(3 - mod) : ""}`;
+
+    }
+
+    displayUserHUD(clientHudMessage: ClientHudMessage) {
+
+        let healthColor = ""
+
+        if (clientHudMessage.health < 50) {
+            if (clientHudMessage.health < 30) {
+                healthColor = "#d9534f"
+            } else {
+                healthColor = "#f0ad4e"
+            }
+        } else {
+            healthColor = "#5cb85c"
+        }
+
+        const healthStyle:any = {
+            fill:healthColor,
+            align: "left",
+            fontSize: 15,
+            fontStyle: "bold"
+        };
+
+        const otherHudStyle:any = {
+            fill: "#ffffff",
+            align: "left",
+            fontSize: 15,
+            fontStyle: "bold"
+        };
+
+        const healthMessage = `
+        Health  : ${clientHudMessage.health}
+        `
+
+        const hudMessage = `
+        Gun : ${clientHudMessage.gunName}
+        Ammo       : ${clientHudMessage.ammo}
+        `
+
+        const width = Number(this.scene.game.config.width);
+
+
+        if (!this.healthText) {
+            this.healthText = this.scene.add
+                .text(width - 200, 10, healthMessage, healthStyle)
+                // .setOrigin(0.5, 0);
+                .setScrollFactor(0)
+        } else {
+            this.healthText.text = healthMessage
+        }
+
+        if (!this.hudText) {
+            this.hudText = this.scene.add
+                .text(width - 200, 40, hudMessage, otherHudStyle)
+                // .setOrigin(0.5, 0);
+                .setScrollFactor(0)
+        } else {
+            this.hudText.text = hudMessage
+        }
 
     }
 

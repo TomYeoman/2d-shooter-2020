@@ -138,7 +138,7 @@ export class BotSystem {
     }
 
     private onCollideWithEnemy = (zombie: BotGraphicServer, enemy: PlayerGraphicServer) => {
-        console.log(`Zombie chomped on human ${enemy.associatedEntityId}`);
+        // console.log(`Zombie chomped on human ${enemy.associatedEntityId}`);
 
         // TODO - Pass zombie type
         enemy.takeDamage(zombie.associatedEntityId)
@@ -232,7 +232,7 @@ export class BotSystem {
 
     private getWaveSize(currentWave: number, waveType: string) {
 
-        return 10
+        // return 10
         return (config.zombies.initialAmount + this.playerGraphicsMap.size) *
             ((this.currentWave * config.zombies.perWave) + config.zombies.perPlayer);
 

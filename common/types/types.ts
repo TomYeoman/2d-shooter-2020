@@ -17,6 +17,7 @@ export enum commandTypes {
 }
 
 export enum messageTypes {
+    CLIENT_HUD_MESSAGE = "CLIENT_HUD_MESSAGE",
     ZOMBIE_WAVE_MESSAGE = "ZOMBIE_WAVE_MESSAGE",
     NET_LOG = "NET_LOG",
     LOBBY_STATE_MESSAGE = "LOBBY_STATE_MESSAGE",
