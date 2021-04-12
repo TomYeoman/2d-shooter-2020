@@ -144,10 +144,12 @@ class PhaserEntityRenderer {
         };
 
         const message = `
-        Game State : ${zombieWaveMessage.gameStatus}
-        Current wave : ${zombieWaveMessage.currentWave}
-        Zombies      : ${zombieWaveMessage.remainingZombiesInWave} / ${zombieWaveMessage.waveSize}
-        Players      : ${zombieWaveMessage.playersAlive} / ${zombieWaveMessage.playersTotal}
+        Game State          : ${zombieWaveMessage.gameStatus}
+        Current wave        : ${zombieWaveMessage.currentWave}
+        Zombies Remaining   : ${zombieWaveMessage.zombiesRemaining}
+        Zombies Killed      : ${zombieWaveMessage.zombiesKilled}
+        Zombies Alive       : ${zombieWaveMessage.zombiesAlive}
+        Players             : ${zombieWaveMessage.playersAlive} / ${zombieWaveMessage.playersTotal}
     `
 
         if (!this.waveInfoText) {

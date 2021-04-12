@@ -15,7 +15,7 @@ import RequestSpawn from '../command/RequestSpawn'
 import RequestJoinGame from '../command/RequestJoinGame'
 
 const config:any = {
-    UPDATE_RATE: 30,
+    UPDATE_RATE: 12,
 
     ID_BINARY_TYPE: nengi.UInt16,
     TYPE_BINARY_TYPE: nengi.UInt8,

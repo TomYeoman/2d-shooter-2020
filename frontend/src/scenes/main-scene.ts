@@ -25,7 +25,7 @@ export class MainScene extends Phaser.Scene {
 
     const client = new nengi.Client(
       nengiConfig,
-      50
+      100
     ) as ExtendedNengiTypes.Client;
     this.nengiClient = client;
   }

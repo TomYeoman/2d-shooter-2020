@@ -12,10 +12,11 @@ export class BotSystem {
     currentWave = 1
     waveSize = 0
     spawnedInWave = 0
+    zombiesKilled = 0
+
     waveType = "normal"
     gameState = "running"
     currentDifficulty = 0
-    killedZombies = 0
 
     spawnRate = config.zombies.spawnRate
     maxCount = config.zombies.maxCount
@@ -75,9 +76,9 @@ export class BotSystem {
 
         const waveTimer = setInterval(() => {
 
-            if (this.spawnedInWave < this.waveSize) {
+            if (this.zombiesKilled < this.waveSize) {
                 // If there's currently less bots that the max allowed
-                if (this.spawnedInWave < this.maxCount) {
+                if (this.botGraphicsMap.size < this.maxCount) {
                     this.trySpawnZombie("normal", "spawn" );
                 }
 
@@ -107,7 +108,9 @@ export class BotSystem {
             this.nengiInstance.message(new ZombieWaveMessage(
                 this.currentWave,
                 this.waveSize,
-                this.spawnedInWave - this.killedZombies,
+                this.waveSize - this.zombiesKilled,
+                this.zombiesKilled,
+                this.botGraphicsMap.size,
                 this.playerGraphicsMap.size,
                 this.playerGraphicsMap.size,
                 this.gameState
@@ -118,21 +121,21 @@ export class BotSystem {
     private trySpawnZombie = (zomType: string, spawnType: string) => {
 
         const spawnName = this.getSpawn()
-        console.log(`Trying to spawn zombie at ${spawnName}`)
+        // console.log(`Trying to spawn zombie at ${spawnName}`)
         const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === spawnName);
 
-        console.log("Spawning bot");
+        // console.log("Spawning bot");
         // Create a new entity for nengi to track
         const entityBot = new BotEntity(spawnPoint.x, spawnPoint.y);
         this.nengiInstance.addEntity(entityBot);
 
         // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-        console.log("about to create graphic");
+        // console.log("about to create graphic");
         const botGraphic = new BotGraphicServer(this.scene, this.worldLayer, entityBot.nid, entityBot.x, entityBot.y, this.botGraphicsMap, this.playerGraphicsMap, this.finder, "", this.onBotDeath, this.onCollideWithEnemy);
-        console.log("created graphic");
+        // console.log("created graphic");
         this.botGraphicsMap.set(entityBot.nid, botGraphic);
 
-        console.log(`Spawned in wave ${ this.spawnedInWave}`)
+        // console.log(`Spawned in wave ${ this.spawnedInWave}`)
         this.spawnedInWave++
 
     }
@@ -215,7 +218,7 @@ export class BotSystem {
             chosenSpawn= possibleSpawns[1];
         }
 
-        console.log(`Using spawn ${chosenSpawn}`);
+        // console.log(`Using spawn ${chosenSpawn}`);
         return chosenSpawn;
 
         // if (prioritySpawn) {
@@ -271,25 +274,24 @@ export class BotSystem {
     onBotDeath = (killerEntityId: number, botEntityId: number): any => {
         // console.log("Method not implemented")
 
-        console.log(`Bot ${botEntityId} was killed by ${killerEntityId} , removing from level`);
+        // console.log(`Bot ${botEntityId} was killed by ${killerEntityId} , removing from level`);
 
         // Remove nengi entity
         const botEntity = this.nengiInstance.getEntity(botEntityId);
         this.nengiInstance.removeEntity(botEntity);
 
         // Delete phaser representation
-
         const bot = this.botGraphicsMap.get(botEntityId);
         if (!bot) {
             throw new Error("Couldn't find the killed bots phaser entity");
         }
 
-        bot.destroy();
+        bot.destroy(true);
         this.botGraphicsMap.delete(bot.associatedEntityId);
 
-        this.killedZombies++
+        this.zombiesKilled++
 
-        if (this.killedZombies == this.waveSize) {
+        if (this.zombiesKilled == this.waveSize) {
             this.endRound()
         }
     }
@@ -298,7 +300,7 @@ export class BotSystem {
 
         // Clear down all wave based times
         this.spawnedInWave = 0;
-        this.killedZombies = 0
+        this.zombiesKilled = 0
         this.waveSize = 0;
 
         if (this.currentWave === config.zombies.maxRounds) {

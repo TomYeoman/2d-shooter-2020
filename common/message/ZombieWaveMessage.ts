@@ -4,7 +4,9 @@ class ZombieWaveMessage {
     constructor(
         public currentWave: number,
         public waveSize: number,
-        public remainingZombiesInWave: number,
+        public zombiesRemaining: number,
+        public zombiesKilled: number,
+        public zombiesAlive: number,
         public playersAlive: number,
         public playersTotal: number,
         public gameStatus : string
@@ -15,7 +17,9 @@ class ZombieWaveMessage {
 ZombieWaveMessage.protocol = {
     currentWave: nengi.UInt8,
     waveSize: nengi.UInt16,
-    remainingZombiesInWave: nengi.UInt16,
+    zombiesRemaining: nengi.UInt16,
+    zombiesKilled: nengi.UInt16,
+    zombiesAlive: nengi.UInt16,
     playersAlive: nengi.UInt8,
     playersTotal: nengi.UInt8,
     gameStatus: nengi.String,

@@ -17,11 +17,13 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
     associatedEntityId: number
     worldLayer: Phaser.Tilemaps.StaticTilemapLayer
+    associatedClient: any
 
     constructor(
         scene: Phaser.Scene,
         worldLayer: Phaser.Tilemaps.StaticTilemapLayer,
         nengiInstance: ExtendedNengiTypes.Instance,
+        private client: ExtendedNengiTypes.Client,
         // bots : any,
         xStart: number,
         yStart: number,
@@ -37,6 +39,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         this.nengiInstance = nengiInstance;
         this.worldLayer = worldLayer;
         this.associatedEntityId = associatedEntityId;
+
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -64,7 +67,27 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         //     });
         // }, 1000 / 60);
 
+        // this.nengiInstance.clients.forEach(client => {
+        //     // TODO - there must be a better way to dot his
+        //     if (client.entitySelf && client.entitySelf.nid === this.associatedEntityId) {
+        //         this.associatedClient = client
+        //     }
+        // })
 
+        setInterval(() => {
+            this.updateHud()
+        }, 200)
+    }
+
+    updateHud() {
+
+        // console.log(Object.keys(this.associatedClient))
+
+            this.nengiInstance.message(new ClientHudMessage(
+                this.health,
+                "~",
+                "Shredder",
+            ), this.client);
     }
 
     fire(mouseX: number, mouseY: number, bots: any ) {
@@ -93,7 +116,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         const bulletEntity = this.nengiInstance.getEntity(entityId);
 
         if (!bulletEntity) {
-            console.log("Trying to delete a bullet which doesn't exist any longer (may have already been cleared after collission)");
+            // console.log("Trying to delete a bullet which doesn't exist any longer (may have already been cleared after collission)");
             return;
         }
 
@@ -107,7 +130,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
     }
 
     processBulletHit = (bullet: any, hitObj: any) => {
-        console.log(`Bullet hit an object ${bullet.associatedEntityId} hit zombie ${hitObj.name}`);
+        // console.log(`Bullet hit an object ${bullet.associatedEntityId} hit zombie ${hitObj.name}`);
 
         if (hitObj.type === "BOT") {
             hitObj.takeDamage(bullet.associatedEntityId);
@@ -163,7 +186,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
     }
 
     public takeDamage(damagerEntityId: number) {
-        this.health -= 10;
+        this.health -= 0.1;
 
 
         // TODO create correct event system soon?
@@ -173,19 +196,6 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         }
 
         // TODO - send a message to this client with their health
-
-        this.nengiInstance.clients.forEach(client => {
-
-            // TODO - there must be a better way to dot his
-            if (client.entitySelf && client.entitySelf.nid === this.associatedEntityId) {
-                this.nengiInstance.message(new ClientHudMessage(
-                    this.health,
-                    "~",
-                    "Shredder",
-                ), client);
-            }
-
-        })
 
         // console.log(`bot ${this.name} new health ${this.health}`);
     }
