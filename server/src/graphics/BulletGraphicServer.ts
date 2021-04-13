@@ -2,9 +2,6 @@ import BotGraphicServer from "./BotGraphicServer";
 import Phaser from "phaser";
 
 export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
-
-    // sprite: Phaser.Physics.Arcade.Sprite
-
     rotation: number = 0
     colliders:any[] = []
 
@@ -21,41 +18,18 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
         cb: any
     ) {
 
-        // this.sprite = scene.physics.add
-        // .sprite(startX, startY, "zombie")
-        // .setSize(50, 50)
-        // .setCircle(25);
-
         super(scene, startX, startY, "bullet");
         this.type = "BULLET";
 
         this.scene.add.existing(this);
-
         this.scene.physics.add.existing(this);
 
-        // console.log(`current listeners ${this.scene.physics.world.listenerCount()}`)
         this.setSize(10, 20)
         this.setDisplaySize(10, 20)
 
-        // this.body.setMass(0.1)
-        // this.body.set
-        // this.body.setSize(25, 25)
-
-        this.associatedEntityId = associatedEntityId;
-        // this.scene.physics.add.collider(this, worldLayer, cb);
-
         this.colliders.push(this.scene.physics.add.collider(this, worldLayer, cb))
-
         this.body.immovable = true
 
-        // super(scene, startX, startY, 5, 5, 0x9966ff)
-        // this.setStrokeStyle(4, 0xefc53f)
-        // scene.add.existing(this)
-        // scene.physics.add.existing(this);
-
-        // this.associatedEntityId = associatedEntityId
-
-        // console.log(angle)
         const vec = scene.physics.velocityFromAngle(angle, 250);
 
         this.setVelocityX(vec.x);
@@ -66,13 +40,6 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         bots.forEach((bot: any) => {
             this.colliders.push(this.scene.physics.add.collider(this, bot, cb))
-
-            // var collider = scene.physics.add.collider(this, bot, cb, function ()
-            // {
-            //     console.log("Removing collider")
-            //     scene.physics.world.removeCollider(collider);
-            // }, this);
-
         });
     }
 
