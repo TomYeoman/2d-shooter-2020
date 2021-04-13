@@ -24,6 +24,8 @@ export class BotSystem {
     finder: any;
 
     hudUpdateTimer: NodeJS.Timer
+	private botGraphicGroup?: Phaser.GameObjects.Group
+
 
     // spawns = []
     constructor(
@@ -132,6 +134,7 @@ export class BotSystem {
         // Create a new phaser bot and link to entity, we'll apply physics to for each path check
         // console.log("about to create graphic");
         const botGraphic = new BotGraphicServer(this.scene, this.worldLayer, entityBot.nid, entityBot.x, entityBot.y, this.botGraphicsMap, this.playerGraphicsMap, this.finder, "", this.onBotDeath, this.onCollideWithEnemy);
+
         // console.log("created graphic");
         this.botGraphicsMap.set(entityBot.nid, botGraphic);
 
@@ -286,8 +289,9 @@ export class BotSystem {
             throw new Error("Couldn't find the killed bots phaser entity");
         }
 
-        bot.destroy(true);
         this.botGraphicsMap.delete(bot.associatedEntityId);
+        bot.markForGC()
+        bot.destroy(true);
 
         this.zombiesKilled++
 

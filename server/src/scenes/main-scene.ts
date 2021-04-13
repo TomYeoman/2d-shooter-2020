@@ -73,6 +73,8 @@ export default class MainScene extends Phaser.Scene {
 
         console.log("Running create");
 
+        console.log("Test")
+
         this.map = this.make.tilemap({ key: this.levelName });
 
         // Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in

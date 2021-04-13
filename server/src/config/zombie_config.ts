@@ -8,7 +8,7 @@ export const config = {
         perPlayer: 100,
         timeoutBetweenWave: 3,
         // Start high, and modify as rounds pass
-        spawnRate: 0.1,
+        spawnRate: 0.01,
             // Start low, and modify as rounds pass
         maxCount:  200,
         maxRounds:  10,

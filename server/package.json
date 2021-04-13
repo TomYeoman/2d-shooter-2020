@@ -21,6 +21,7 @@
     "stress-test": "npm run set-env && nodemon ./src/bot/stresstest.ts",
     "// ------ BUILDING ----- //": "",
     "build": "tsc",
+    "postbuild": "cp -r ./src/assets dist/server/src/assets",
     "build:watch": "tsc -w",
     "// ------ LINTING ----- //": "",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
@@ -29,8 +30,8 @@
     "knex:migrate:latest": "npx knex --knexfile src/db/knexfile.ts migrate:latest",
     "knex:migrate:rollback": "npx knex --knexfile src/db/knexfile.ts migrate:rollback",
     "// ------ PRODUCTION ----- //": "",
-    "start:prod": "nodemon src/index.ts",
-    "start": "npm run build && node dist/server.js"
+    "start": "node dist/server/src/server.js",
+    "start:debug": "npm run build && node --inspect dist/server/src/server.js"
   },
   "dependencies": {
     "@geckos.io/phaser-on-nodejs": "^1.2.3",

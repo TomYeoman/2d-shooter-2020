@@ -168,6 +168,19 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite {
 
         console.log(`bot ${this.name} new health ${this.health}`);
     }
+
+    public markForGC() {
+        this.speed = undefined
+        this.associatedEntityId = undefined
+        this.playerType = undefined
+        this.finder = undefined
+        this.tickCount = undefined
+        this.name = undefined
+        this.type= undefined
+        this.health = undefined
+        this.deathCallback = undefined
+
+    }
 }
 
 

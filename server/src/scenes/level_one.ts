@@ -168,6 +168,9 @@ export default class LevelOne extends Phaser.Scene {
     // ------------ MAIN LOOP ------------//
     update() {
 
+        // console.log(this.sys.updateList.length)
+        // console.log(this.scene.physics.world.listenerCount)
+
         // let target: any;
         // let isReadyToPath = false;
 
@@ -317,8 +320,6 @@ export default class LevelOne extends Phaser.Scene {
             // Whilst we send ID@s of entity over the wire, we need to call phaser on the server
             const clientEntityPhaser: PlayerGraphicServer = client.entityPhaser;
             clientEntityPhaser.fire(
-                command.mouseX,
-                command.mouseY,
                 this.botSystem.botGraphicsMap,
             );
         }

@@ -57,3 +57,8 @@ Game Ideas
 
 Zombies -
  - one in X drops pet, or other special for collection log
+
+
+
+Main screen
+- ANimated background of players in game

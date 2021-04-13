@@ -5,7 +5,9 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
     // sprite: Phaser.Physics.Arcade.Sprite
 
-    rotation:number = 0
+    rotation: number = 0
+    colliders:any[] = []
+
 
     constructor(
         scene: Phaser.Scene,
@@ -20,18 +22,18 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
     ) {
 
         // this.sprite = scene.physics.add
-            // .sprite(startX, startY, "zombie")
-            // .setSize(50, 50)
-            // .setCircle(25);
+        // .sprite(startX, startY, "zombie")
+        // .setSize(50, 50)
+        // .setCircle(25);
 
         super(scene, startX, startY, "bullet");
-        this.name = "bullet"
+        this.type = "BULLET";
 
-        scene.add.existing(this);
+        this.scene.add.existing(this);
 
-        scene.physics.add.existing(this);
+        this.scene.physics.add.existing(this);
 
-
+        // console.log(`current listeners ${this.scene.physics.world.listenerCount()}`)
         this.setSize(10, 20)
         this.setDisplaySize(10, 20)
 
@@ -40,7 +42,10 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
         // this.body.setSize(25, 25)
 
         this.associatedEntityId = associatedEntityId;
-        scene.physics.add.collider(this, worldLayer, cb);
+        // this.scene.physics.add.collider(this, worldLayer, cb);
+
+        this.colliders.push(this.scene.physics.add.collider(this, worldLayer, cb))
+
         this.body.immovable = true
 
         // super(scene, startX, startY, 5, 5, 0x9966ff)
@@ -60,12 +65,27 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
         this.rotation = Phaser.Math.DegToRad(angle) + 1.57079633
 
         bots.forEach((bot: any) => {
-            scene.physics.add.collider(this, bot, cb);
+            this.colliders.push(this.scene.physics.add.collider(this, bot, cb))
+
+            // var collider = scene.physics.add.collider(this, bot, cb, function ()
+            // {
+            //     console.log("Removing collider")
+            //     scene.physics.world.removeCollider(collider);
+            // }, this);
+
         });
     }
 
     preUpdate = () => {
         // console.log("Running pre-update")
+    }
+
+
+    public removeColliders() {
+        console.log(`Removing ${this.colliders.length} colliders`)
+        this.colliders.forEach((c) => {
+            this.scene.physics.world.removeCollider(c)
+        })
     }
 
 }

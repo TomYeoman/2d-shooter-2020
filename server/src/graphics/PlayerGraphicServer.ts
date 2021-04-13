@@ -9,25 +9,20 @@ import ClientHudMessage from "../../../common/message/ClientHudMessage";
 export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
     weaponSystem: WeaponSystem
-    nengiInstance: ExtendedNengiTypes.Instance
     rotation = 0
     speed: number
-    bulletGraphics: Map<number, any>
+    bulletGraphics: Map<number, BulletGraphicServer>
     health = 100
-
-    associatedEntityId: number
-    worldLayer: Phaser.Tilemaps.StaticTilemapLayer
-    associatedClient: any
+    totalBullets = 0
 
     constructor(
         scene: Phaser.Scene,
-        worldLayer: Phaser.Tilemaps.StaticTilemapLayer,
-        nengiInstance: ExtendedNengiTypes.Instance,
+        private worldLayer: Phaser.Tilemaps.StaticTilemapLayer,
+        private nengiInstance: ExtendedNengiTypes.Instance,
         private client: ExtendedNengiTypes.Client,
-        // bots : any,
         xStart: number,
         yStart: number,
-        associatedEntityId: number
+        public associatedEntityId: number
     ) {
 
 
@@ -36,8 +31,6 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         this.speed = 1000;
 
         this.weaponSystem = new WeaponSystem();
-        this.nengiInstance = nengiInstance;
-        this.worldLayer = worldLayer;
         this.associatedEntityId = associatedEntityId;
 
 
@@ -51,46 +44,21 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         scene.physics.add.collider(this, worldLayer);
         this.body.immovable = true
 
-        // // Set a callback to update this entity, with current rendered position every
-        // setInterval(() => {
-        //     this.bulletGraphics.forEach((bullet) => {
-        //         const associatedEntity = this.nengiInstance.getEntity(bullet.associatedEntityId);
-
-        //         if (!associatedEntity) {
-        //             console.log("Trying to update positions of bullet graphic, but cannot find an entity");
-        //             return;
-        //         }
-
-        //         associatedEntity.x = bullet.x;
-        //         associatedEntity.y = bullet.y;
-        //         associatedEntity.rotation = bullet.rotation;
-        //     });
-        // }, 1000 / 60);
-
-        // this.nengiInstance.clients.forEach(client => {
-        //     // TODO - there must be a better way to dot his
-        //     if (client.entitySelf && client.entitySelf.nid === this.associatedEntityId) {
-        //         this.associatedClient = client
-        //     }
-        // })
-
         setInterval(() => {
             this.updateHud()
         }, 200)
     }
 
+    // Sent message to the client who owns this player, with their player information
     updateHud() {
-
-        // console.log(Object.keys(this.associatedClient))
-
-            this.nengiInstance.message(new ClientHudMessage(
-                this.health,
-                "~",
-                "Shredder",
-            ), this.client);
+        this.nengiInstance.message(new ClientHudMessage(
+            this.health,
+            "~",
+            "Shredder",
+        ), this.client);
     }
 
-    fire(mouseX: number, mouseY: number, bots: any ) {
+    fire(bots: any ) {
         // Set on cooldown - will check soon
         // this.weaponSystem.fire()
 
@@ -101,15 +69,13 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         const bulletGraphic = new BulletGraphicServer(this.scene, this.worldLayer, bulletEntity.nid, this.x, this.y, Phaser.Math.RadToDeg(this.rotation), bots, this.processBulletHit);
         this.bulletGraphics.set(bulletGraphic.associatedEntityId, bulletGraphic);
 
+        // Debug bullet creation lag
+        this.totalBullets++
+        console.log(this.totalBullets)
+
         setTimeout(() => {
             this.deleteBullet(bulletGraphic.associatedEntityId);
         }, 3000);
-
-        // bulletGraphic.destroy()
-
-        // Create entity
-
-        return true;
     }
 
     deleteBullet = (entityId: number) => {
@@ -123,9 +89,14 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         this.nengiInstance.removeEntity(bulletEntity);
 
         // Delete server copy
-        const bullet = this.bulletGraphics.get(entityId);
-        bullet.destroy();
-        this.bulletGraphics.delete(bullet.associatedEntityId);
+        let bullet = this.bulletGraphics.get(entityId);
+
+        // CALL THIS FIRST TO IMPROVE PERFORMANCE
+        bullet.removeColliders()
+        bullet.destroy(false);
+
+        this.bulletGraphics.delete(entityId);
+        console.log(this.bulletGraphics.size)
 
     }
 
@@ -166,10 +137,9 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         // Normalize and scale the velocity so that player can't move faster along a diagonal
         // this.body.velocity.normalize().scale(speed);
-
-
     }
 
+    // Update the entity, with the local positions of all bullets this player has
     preUpdate() {
         this.bulletGraphics.forEach((bullet) => {
             const associatedEntity = this.nengiInstance.getEntity(bullet.associatedEntityId);
@@ -188,15 +158,10 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
     public takeDamage(damagerEntityId: number) {
         this.health -= 0.1;
 
-
         // TODO create correct event system soon?
         if (this.health <= 0) {
             // console.log("Human killed :(")
             // return this.deathCallback(damagerEntityId, this.associatedEntityId);
         }
-
-        // TODO - send a message to this client with their health
-
-        // console.log(`bot ${this.name} new health ${this.health}`);
     }
 }
