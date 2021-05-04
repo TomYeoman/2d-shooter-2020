@@ -1,6 +1,44 @@
 import BotGraphicServer from "./BotGraphicServer";
 import Phaser from "phaser";
 
+
+// class Bullets extends Phaser.Physics.Arcade.Group {
+//     constructor(world, scene, config) {
+//       super(
+//         world,
+//         scene,
+//         Phaser.Utils.Objects.Merge(
+//           {
+//             classType: Bullet,
+//             createCallback: Bullets.prototype.onCreate
+//           },
+//           config
+//         )
+//       );
+
+//       console.assert(this.classType === Bullet);
+//     }
+
+//     fire(x, y, vx, vy) {
+//       const bullet = this.getFirstDead(false);
+
+//       if (bullet) {
+//         bullet.fire(x, y, vx, vy);
+//       }
+//     }
+
+//     onCreate(bullet) {
+//       bullet.onCreate();
+//     }
+
+//     poolInfo() {
+//       return `${this.name} ${this.getLength()} (${this.countActive(
+//         true
+//       )}:${this.countActive(false)})`;
+//     }
+//   }
+
+
 export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
     rotation: number = 0
     colliders:any[] = []
@@ -41,6 +79,14 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
         bots.forEach((bot: any) => {
             this.colliders.push(this.scene.physics.add.collider(this, bot, cb))
         });
+
+    }
+
+
+    onCreate() {
+        this.disableBody(true, true);
+        // this.body.collideWorldBounds = true;
+        // this.body.onWorldBounds = true;
     }
 
     preUpdate = () => {
@@ -49,10 +95,11 @@ export default class BulletGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
 
     public removeColliders() {
-        console.log(`Removing ${this.colliders.length} colliders`)
-        this.colliders.forEach((c) => {
-            this.scene.physics.world.removeCollider(c)
-        })
+        // console.log(`Removing ${this.colliders.length} colliders`)
+        // this.colliders.forEach((c) => {
+        //     this.scene.physics.world.removeCollider(c)
+        // })
+        // this.disableBody(true, true)
     }
 
 }

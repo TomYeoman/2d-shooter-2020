@@ -55,11 +55,12 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite {
         this.speed = randomIntFromInterval(100, 100);
         this.associatedEntityId = associatedEntityId;
 
-        this.body.bounce.set(0.1, 0.1);
+        // this.body.bounce.set(0.1, 0.1);
 
-        this.body.setMass(0.1);
+        // this.body.setMass(0.1);
         // this.body.pushable = true
         // this.body.immovable = true
+
 
         botGraphics.forEach((bot) => {
             scene.physics.add.collider(this, bot);
@@ -152,6 +153,7 @@ export default class BotGraphicServer extends Phaser.Physics.Arcade.Sprite {
 
         }
 
+        this.rotation = Math.atan2(targetX - this.y, targetY - this.x);
 
 
     }

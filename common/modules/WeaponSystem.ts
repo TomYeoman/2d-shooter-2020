@@ -7,7 +7,7 @@ class WeaponSystem {
 
     constructor() {
         this.onCooldown = false
-        this.cooldown = 0.5
+        this.cooldown = 0.1
         this.acc = 0
     }
 

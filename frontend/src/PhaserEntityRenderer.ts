@@ -140,8 +140,8 @@ class PhaserEntityRenderer {
         const textStyle:any = {
             fill: "#ffffff",
             align: "left",
-            fontSize: 15,
-            fontStyle: "bold"
+            // fontSize: 15,
+            // fontStyle: "bold"
         };
 
         const message = `

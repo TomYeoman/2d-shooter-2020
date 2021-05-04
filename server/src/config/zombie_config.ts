@@ -5,12 +5,12 @@ export const config = {
         // Zombies added per wave passed
         perWave : 5,
         // Zombies per actively participating player
-        perPlayer: 100,
+        perPlayer: 2,
         timeoutBetweenWave: 3,
         // Start high, and modify as rounds pass
         spawnRate: 0.01,
             // Start low, and modify as rounds pass
-        maxCount:  200,
+        maxCount:  500,
         maxRounds:  10,
     }
 };

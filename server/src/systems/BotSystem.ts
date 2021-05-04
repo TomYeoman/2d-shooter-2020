@@ -6,6 +6,8 @@ import ZombieWaveMessage from "../../../common/message/ZombieWaveMessage";
 import BotGraphicServer from "../graphics/BotGraphicServer";
 import BotEntity from "../../../common/entity/BotEntity";
 import EasyStar from "easystarjs";
+import {Bots, Bot}  from "../graphics/BotGraphicNew";
+
 
 export class BotSystem {
 
@@ -25,7 +27,7 @@ export class BotSystem {
 
     hudUpdateTimer: NodeJS.Timer
 	private botGraphicGroup?: Phaser.GameObjects.Group
-
+    bots: Bots
 
     // spawns = []
     constructor(
@@ -37,6 +39,36 @@ export class BotSystem {
         private nengiInstance: ExtendedNengiTypes.Instance,
         private playerGraphicsMap:  Map<number, PlayerGraphicServer>,
     ) {
+
+
+        this.bots = this.scene.add.existing(
+            new Bots(this.nengiInstance, this.onBotDeath, this.scene.physics.world, this.scene, { name: "bots" })
+        ) as unknown as Bots;
+
+        this.bots.createMultiple({
+            key: "zombie",
+            quantity: 1000,
+            active: false,
+            visible: false
+          });
+
+        this.scene.physics.add.collider(this.bots, this.worldLayer, (bot: Bot, enemy: any) => {
+            // console.log("zombie hit another zombie")
+            // bot.disableBody(true, true);
+            // this.deleteBullet(bullet.associatedEntityId)
+        });
+        this.scene.physics.add.collider(this.bots, this.bots, (bot: Bot, enemy: any) => {
+            // console.log("zombie hit another zombie")
+            // bot.disableBody(true, true);
+            // this.deleteBullet(bullet.associatedEntityId)
+        });
+
+        // this.scene.physics.add.collider(this.bots, this.bots, (b1: Bot, b2: Bot) => {
+        //     // console.log("zombie hit a world layer object")
+        //     // bot.disableBody(true, true);
+        //     // this.deleteBullet(bullet.associatedEntityId)
+        // });
+
     }
 
     beginGame = async () => {
@@ -78,13 +110,17 @@ export class BotSystem {
 
         const waveTimer = setInterval(() => {
 
-            if (this.zombiesKilled < this.waveSize) {
+            if (this.zombiesKilled + this.bots.countActive() < this.waveSize) {
+
                 // If there's currently less bots that the max allowed
-                if (this.botGraphicsMap.size < this.maxCount) {
+                if (this.bots.countActive() < this.maxCount) {
                     this.trySpawnZombie("normal", "spawn" );
                 }
 
+
             } else {
+
+                // Now we must wait until all zombies are killed
                 console.log("Finished spawning all zombies for round - clearing timer");
                 clearTimeout(waveTimer)
             }
@@ -112,7 +148,7 @@ export class BotSystem {
                 this.waveSize,
                 this.waveSize - this.zombiesKilled,
                 this.zombiesKilled,
-                this.botGraphicsMap.size,
+                this.bots.countActive(),
                 this.playerGraphicsMap.size,
                 this.playerGraphicsMap.size,
                 this.gameState
@@ -127,27 +163,14 @@ export class BotSystem {
         const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === spawnName);
 
         // console.log("Spawning bot");
-        // Create a new entity for nengi to track
-        const entityBot = new BotEntity(spawnPoint.x, spawnPoint.y);
-        this.nengiInstance.addEntity(entityBot);
-
-        // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-        // console.log("about to create graphic");
-        const botGraphic = new BotGraphicServer(this.scene, this.worldLayer, entityBot.nid, entityBot.x, entityBot.y, this.botGraphicsMap, this.playerGraphicsMap, this.finder, "", this.onBotDeath, this.onCollideWithEnemy);
-
-        // console.log("created graphic");
-        this.botGraphicsMap.set(entityBot.nid, botGraphic);
-
-        // console.log(`Spawned in wave ${ this.spawnedInWave}`)
-        this.spawnedInWave++
-
+        this.bots.spawnBot(spawnPoint.x, spawnPoint.y, this.playerGraphicsMap, this.finder)
     }
 
     private onCollideWithEnemy = (zombie: BotGraphicServer, enemy: PlayerGraphicServer) => {
         // console.log(`Zombie chomped on human ${enemy.associatedEntityId}`);
 
         // TODO - Pass zombie type
-        enemy.takeDamage(zombie.associatedEntityId)
+        // enemy.takeDamage(zombie.associatedEntityId)
         // if (hitObj.type === "BOT") {
         //     hitObj.takeDamage(bullet.associatedEntityId);
         // }
@@ -199,7 +222,7 @@ export class BotSystem {
                     continue;
                 }
 
-                console.log(properties[i]);
+                // console.log(properties[i]);
                 if(!properties[i].collides) acceptableTiles.push(i+1);
                 // if(properties[i].cost) Game.finder.setTileCost(i+1, properties[i].cost); // If there is a cost attached to the tile, let's register it
             }
@@ -275,23 +298,10 @@ export class BotSystem {
     }
 
     onBotDeath = (killerEntityId: number, botEntityId: number): any => {
-        // console.log("Method not implemented")
-
         // console.log(`Bot ${botEntityId} was killed by ${killerEntityId} , removing from level`);
-
         // Remove nengi entity
         const botEntity = this.nengiInstance.getEntity(botEntityId);
         this.nengiInstance.removeEntity(botEntity);
-
-        // Delete phaser representation
-        const bot = this.botGraphicsMap.get(botEntityId);
-        if (!bot) {
-            throw new Error("Couldn't find the killed bots phaser entity");
-        }
-
-        this.botGraphicsMap.delete(bot.associatedEntityId);
-        bot.markForGC()
-        bot.destroy(true);
 
         this.zombiesKilled++
 
@@ -332,38 +342,61 @@ export class BotSystem {
     // }
 
 
-    pathBots = () => {
+    updateBots = () => {
 
-        let isReadyToPath = false;
-        let target: any;
+        this.bots.getChildren().forEach((bot: Bot) => {
 
-        this.nengiInstance.clients.forEach((client) => {
+            if (bot.active) {
+                // console.log(`Updating position for ${bullet.associatedEntityId}`)
 
-            const entitySelf = client.entitySelf;
-            if (!entitySelf) {
-                console.log("No clients to path find to yet");
-            } else {
-                isReadyToPath = true;
-                target = client;
-            }
-        });
+                const associatedEntity = this.nengiInstance.getEntity(bot.associatedEntityId);
 
-        if (isReadyToPath) {
-            this.botGraphicsMap.forEach((bot: BotGraphicServer, index) => {
-                bot.moveToPlayer(target.entitySelf.x, target.entitySelf.y);
-
-                // Update over the wire entity, with phasers rending of it
-                const associatedNengiEntity = this.nengiInstance.getEntity(bot.associatedEntityId);
-
-                if (associatedNengiEntity) {
-                    // console.log(`Found associated nengi entity, sending phaser position over X${ bot.sprite.x}, Y:${ bot.sprite.y}`)
-                    associatedNengiEntity.x = bot.x;
-                    associatedNengiEntity.y = bot.y;
-
-                    associatedNengiEntity.rotation = Math.atan2(target.entitySelf.y - bot.y, target.entitySelf.x - bot.x);
+                if (!associatedEntity) {
+                    // console.log("Trying to update positions of a bot entity, but cannot find an entity");
+                    return;
                 }
-            });
-        }
+
+                associatedEntity.x = bot.x;
+                associatedEntity.y = bot.y;
+                associatedEntity.rotation = bot.rotation;
+            }
+
+        })
+
+        // let isReadyToPath = false;
+        // let target: any;
+
+        // this.nengiInstance.clients.forEach((client) => {
+
+        //     const entitySelf = client.entitySelf;
+        //     if (!entitySelf) {
+        //         console.log("No clients to path find to yet");
+        //     } else {
+        //         isReadyToPath = true;
+        //         target = client;
+        //     }
+        // });
+
+        // if (isReadyToPath) {
+        //     this.botGraphicsMap.forEach((bot: BotGraphicServer, index) => {
+        //         bot.moveToPlayer(target.entitySelf.x, target.entitySelf.y);
+
+        //         // Update over the wire entity, with phasers rending of it
+        //         const associatedNengiEntity = this.nengiInstance.getEntity(bot.associatedEntityId);
+
+        //         if (associatedNengiEntity) {
+        //             // console.log(`Found associated nengi entity, sending phaser position over X${ bot.sprite.x}, Y:${ bot.sprite.y}`)
+        //             associatedNengiEntity.x = bot.x;
+        //             associatedNengiEntity.y = bot.y;
+
+        //             associatedNengiEntity.rotation = Math.atan2(target.entitySelf.y - bot.y, target.entitySelf.x - bot.x);
+        //         }
+        //     });
+        // }
 
     }
+
+
+
+
 }
