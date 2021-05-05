@@ -213,7 +213,7 @@ export default class MainScene extends Phaser.Scene {
             this.nengiInstance.addEntity(entitySelf);
 
             // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-            const playerGraphic = new PlayerGraphicServer(this, this.worldLayer, this.nengiInstance, client, entitySelf.x, entitySelf.y, entitySelf.nid);
+            const playerGraphic = new PlayerGraphicServer(this, this.worldLayer, this.nengiInstance, client, entitySelf.x, entitySelf.y, entitySelf.nid, this.deathCallback);
             this.playerGraphics.set(entitySelf.nid, playerGraphic);
 
             // Tell the client about the new entity ID they now control for this level
@@ -265,5 +265,7 @@ export default class MainScene extends Phaser.Scene {
 
     }
 
-
+    deathCallback = (playerEntityId: number, damagerEntityId: number):any => {
+        console.log("Hitting death callback")
+    }
 }

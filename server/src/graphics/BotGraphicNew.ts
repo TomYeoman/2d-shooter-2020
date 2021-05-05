@@ -120,6 +120,8 @@ export class Bot extends Phaser.Physics.Arcade.Sprite {
         this.disableBody(true, true);
         // this.body.immovable = true
         this.onDeathCallback = deathCallback
+
+        this.setBounce(1)
     }
 
     public moveBot(nextPath: { x: number; y: number }) {

@@ -1,6 +1,5 @@
 import BulletEntity from "../../../common/entity/BulletEntity";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
-import BotGraphicServer from "./BotGraphicServer";
 
 
 export class Bullets extends Phaser.Physics.Arcade.Group {
@@ -25,7 +24,6 @@ export class Bullets extends Phaser.Physics.Arcade.Group {
         startX: number,
         startY: number,
         angle: number,
-        bots: BotGraphicServer[],
     ) {
 
       const bullet = this.getFirstDead(false);
@@ -42,7 +40,6 @@ export class Bullets extends Phaser.Physics.Arcade.Group {
             startX,
             startY,
             angle,
-            bots,
         );
       }
 
@@ -70,14 +67,12 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     public startX: number
     public startY: number
     public angle: number
-    public bots: BotGraphicServer[]
 
     fire(
         associatedEntityId: number,
         startX: number,
         startY: number,
         angle: number,
-        bots: BotGraphicServer[],
     ) {
 
       this.associatedEntityId = associatedEntityId

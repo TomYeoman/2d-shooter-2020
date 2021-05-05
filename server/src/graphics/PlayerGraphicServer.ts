@@ -1,20 +1,18 @@
 import WeaponSystem from "../../../common/modules/WeaponSystem";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Phaser from "phaser";
-import BotGraphicServer from "./BotGraphicServer";
-import BulletGraphicServer from "./BulletGraphicServer";
-import BulletEntity from "../../../common/entity/BulletEntity";
 import ClientHudMessage from "../../../common/message/ClientHudMessage";
 import { Bullet, Bullets } from "./BulletsNew";
 import { BotSystem } from "../systems/BotSystem";
 import { Bot } from "./BotGraphicNew";
+
+type deathCallback = (playerEntityId: number, damagerEntityId: number) => {}
 
 export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
     weaponSystem: WeaponSystem
     rotation = 0
     speed: number
-    bulletGraphics: Map<number, BulletGraphicServer>
     health = 100
     totalBullets = 0
 
@@ -28,11 +26,11 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         xStart: number,
         yStart: number,
         public associatedEntityId: number,
-        private botSystem?: BotSystem
+        private deathCallback: deathCallback,
+        private botSystem?: BotSystem,
     ) {
 
         super(scene, xStart, yStart, "player");
-        this.bulletGraphics = new Map();
 
         this.bullets = this.scene.add.existing(
             new Bullets(this.nengiInstance, this.scene.physics.world, this.scene, { name: "bullets" })
@@ -47,32 +45,28 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         this.scene.physics.add.collider(this.bullets, this.worldLayer, (bullet: Bullet, enemy: Bullet) => {
             console.log("bullet hit a world layer object")
-            bullet.disableBody(true, true);
             this.deleteBullet(bullet.associatedEntityId)
-
+            bullet.disableBody(true, true);
         });
 
         if (this.botSystem) {
               this.scene.physics.add.overlap(this.bullets, this.botSystem.bots, (bullet: Bullet, zombie: Bot) => {
                 console.log("bullet hit a zombie")
-                bullet.disableBody(true, true);
                 this.deleteBullet(bullet.associatedEntityId)
+                bullet.disableBody(true, true);
 
                 zombie.takeDamage(bullet.associatedEntityId);
 
               });
 
-              this.scene.physics.add.overlap(this, this.botSystem.bots, (PlayerGraphicServer: Bullet, zombie: Bot) => {
+              this.scene.physics.add.overlap(this, this.botSystem.bots, (player: PlayerGraphicServer, zombie: Bot) => {
                 console.log("zombie hit a player")
 
-                // zombie.takeDamage(bullet.associatedEntityId);
+                player.takeDamage(zombie.associatedEntityId)
 
             });
 
         }
-
-
-
 
         this.speed = 1000;
 
@@ -103,21 +97,10 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
         ), this.client);
     }
 
-    fire(bots: any ) {
-        // Set on cooldown - will check soon
-        // this.weaponSystem.fire()
-
+    fire() {
         if (this.weaponSystem.fire()) {
-            this.bullets.fire(this.x, this.y, Phaser.Math.RadToDeg(this.rotation), bots);
+            this.bullets.fire(this.x, this.y, Phaser.Math.RadToDeg(this.rotation));
         }
-
-        // We now have a bullet created, that has a link to the entity so we can update it easily
-        // const bulletGraphic = new BulletGraphicServer(this.scene, this.worldLayer, bulletEntity.nid, this.x, this.y, Phaser.Math.RadToDeg(this.rotation), bots, this.processBulletHit);
-        // this.bulletGraphics.set(bulletGraphic.associatedEntityId, bulletGraphic);
-
-        // // Debug bullet creation lag
-        // this.totalBullets++
-        // console.log(this.totalBullets)
 
         // setTimeout(() => {
         //     this.deleteBullet(bulletGraphic.associatedEntityId);
@@ -213,16 +196,17 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         })
 
+    }
     //     });
     // }
 
-    // public takeDamage(damagerEntityId: number) {
-    //     this.health -= 0.1;
+    private takeDamage = (damagerEntityId: number) => {
+        this.health -= 0.1;
 
-    //     // TODO create correct event system soon?
-    //     if (this.health <= 0) {
-    //         console.log("Human killed :(")
-    //         return this.deathCallback(damagerEntityId, this.associatedEntityId);
-    //     }
+        // TODO create correct event system soon?
+        if (this.health <= 0) {
+            console.log("Human killed :(")
+            return this.deathCallback(this.associatedEntityId, damagerEntityId);
+        }
     }
 }

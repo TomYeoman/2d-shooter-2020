@@ -8,6 +8,8 @@ export const newGame = () => {
     const gameConfig: Phaser.Types.Core.GameConfig = {
         ...phaserGameConfig,
         type: Phaser.AUTO,
+        width: window.innerWidth,
+        height: window.innerHeight,
         fps: {
             target: clientFPS,
             forceSetTimeOut: true,

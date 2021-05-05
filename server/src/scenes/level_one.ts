@@ -9,11 +9,6 @@ import FireCommand from "../../../common/command/FireCommand";
 import PlayerEntity from "../../../common/entity/PlayerEntity";
 import PlayerGraphicServer from "../graphics/PlayerGraphicServer";
 import Identity from "../../../common/message/Identity";
-import nengi from "nengi";
-import RequestJoinGame from "../../../common/command/RequestJoinGame";
-import EasyStar from "easystarjs";
-import BotGraphicServer from "../graphics/BotGraphicServer";
-import BotEntity from "../../../common/entity/BotEntity";
 import { BotSystem } from "../systems/BotSystem";
 /*
 When we start a new level, we need to
@@ -197,7 +192,7 @@ export default class LevelOne extends Phaser.Scene {
         this.nengiInstance.addEntity(entitySelf);
 
         // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-        const playerGraphic = new PlayerGraphicServer(this, this.worldLayer, this.nengiInstance, client, entitySelf.x, entitySelf.y, entitySelf.nid, this.botSystem);
+        const playerGraphic = new PlayerGraphicServer(this, this.worldLayer, this.nengiInstance, client, entitySelf.x, entitySelf.y, entitySelf.nid, this.deathCallback, this.botSystem);
         this.playerGraphics.set(entitySelf.nid, playerGraphic);
 
         // Tell the client about the new entity ID they now control for this level
@@ -247,15 +242,19 @@ export default class LevelOne extends Phaser.Scene {
 
     }
 
+
+
     commandFire(command: FireCommand, client: any) {
 
         if (client.entitySelf && client.entityPhaser) {
             // Whilst we send ID@s of entity over the wire, we need to call phaser on the server
             const clientEntityPhaser: PlayerGraphicServer = client.entityPhaser;
-            clientEntityPhaser.fire(
-                this.botSystem.botGraphicsMap,
-            );
+            clientEntityPhaser.fire();
         }
+    }
+
+    deathCallback = (playerEntityId: number, damagerEntityId: number):any => {
+        console.log("Hitting death callback")
     }
 
 }
