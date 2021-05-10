@@ -5,6 +5,7 @@ import NetLog from "../../../common/message/NetLog";
 import ZombieWaveMessage from "../../../common/message/ZombieWaveMessage";
 import EasyStar from "easystarjs";
 import {Bots, Bot}  from "../graphics/BotGraphicNew";
+import { PlayerSystem } from "./PlayerSystem";
 
 
 export class BotSystem {
@@ -34,7 +35,7 @@ export class BotSystem {
         private tileset: Phaser.Tilemaps.Tileset,
 
         private nengiInstance: ExtendedNengiTypes.Instance,
-        private playerGraphicsMap:  Map<number, PlayerGraphicServer>,
+        private playerSystem:  PlayerSystem
     ) {
 
 
@@ -99,6 +100,7 @@ export class BotSystem {
 
     private startRegularWave = async() => {
 
+        this.playerSystem.respawnAllPlayers()
         this.gameState = "running";
 
         this.waveSize = this.getWaveSize(this.currentWave, this.waveType);
@@ -150,8 +152,8 @@ export class BotSystem {
                 this.waveSize - this.zombiesKilled,
                 this.zombiesKilled,
                 this.bots.countActive(),
-                this.playerGraphicsMap.size,
-                this.playerGraphicsMap.size,
+                this.playerSystem.getTotalAlivePlayerCount(),
+                this.playerSystem.getTotalPlayerCount(),
                 this.gameState
             ), client);
         });
@@ -164,7 +166,7 @@ export class BotSystem {
         const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === spawnName);
 
         // console.log("Spawning bot");
-        this.bots.spawnBot(spawnPoint.x, spawnPoint.y, this.playerGraphicsMap, this.finder)
+        this.bots.spawnBot(spawnPoint.x, spawnPoint.y, this.playerSystem, this.finder)
     }
 
     private initialisePathing = () => {
@@ -250,8 +252,8 @@ export class BotSystem {
 
     private getWaveSize(currentWave: number, waveType: string) {
 
-        // return 10
-        return (config.zombies.initialAmount + this.playerGraphicsMap.size) *
+        return 1
+        return (config.zombies.initialAmount + this.playerSystem.getTotalPlayerCount()) *
             ((this.currentWave * config.zombies.perWave) + config.zombies.perPlayer);
 
             // 1 = (10 + 10) * ((1 * 5) + 5) = 200

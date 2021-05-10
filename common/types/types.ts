@@ -18,6 +18,7 @@ export enum commandTypes {
 
 export enum messageTypes {
     CLIENT_HUD_MESSAGE = "CLIENT_HUD_MESSAGE",
+    CLIENT_STATE_MESSAGE = "CLIENT_STATE_MESSAGE",
     ZOMBIE_WAVE_MESSAGE = "ZOMBIE_WAVE_MESSAGE",
     NET_LOG = "NET_LOG",
     LOBBY_STATE_MESSAGE = "LOBBY_STATE_MESSAGE",
@@ -36,4 +37,10 @@ export enum SCENE_NAMES {
     LEVEL_ONE = "LEVEL_ONE",
     LEVEL_ZERO = "LEVEL_ZERO",
   //   GAME_OVER = "GAME_OVER"
-  }
+}
+
+export enum CLIENT_SCENE_STATE {
+    ALIVE = "ALIVE",
+    DEAD = "DEAD",
+    SPECTATING = "ALIVE",
+}

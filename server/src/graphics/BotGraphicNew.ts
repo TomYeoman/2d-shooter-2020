@@ -1,7 +1,8 @@
 import EasyStar from "easystarjs";
 import BotEntity from "../../../common/entity/BotEntity";
+import PlayerEntity from "../../../common/entity/PlayerEntity";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
-import PlayerGraphicServer from "./PlayerGraphicServer";
+import {PlayerSystem} from "../systems/PlayerSystem";
 
 type deathCallback = (killerEntityId: number, botEntityId: number) => {}
 
@@ -32,7 +33,7 @@ export class Bots extends Phaser.Physics.Arcade.Group {
     spawnBot(
         startX: number,
         startY: number,
-        playerGraphics: Map<number, PlayerGraphicServer>,
+        playerSystem: PlayerSystem,
         finder: EasyStar.js
     ) {
 
@@ -49,7 +50,7 @@ export class Bots extends Phaser.Physics.Arcade.Group {
                 entityBot.nid,
                 startX,
                 startY,
-                playerGraphics,
+                playerSystem,
                 finder
             );
         } else {
@@ -84,19 +85,20 @@ export class Bot extends Phaser.Physics.Arcade.Sprite {
     type: string
     health = 100
     onDeathCallback: deathCallback
-    playerGraphics: Map<number, PlayerGraphicServer>
+    playerSystem: PlayerSystem
+    targetEntity: PlayerEntity
 
     spawnBot(
         associatedEntityId: number,
         startX: number,
         startY: number,
-        playerGraphics: Map<number, PlayerGraphicServer>,
+        playerSystem: PlayerSystem,
         finder: EasyStar.js
     ) {
 
         this.enableBody(true, startX, startY, true, true);
         this.associatedEntityId = associatedEntityId
-        this.playerGraphics = playerGraphics
+        this.playerSystem = playerSystem
 
         this.setSize(50, 50);
         this.setDisplaySize(50, 50);
@@ -153,12 +155,33 @@ export class Bot extends Phaser.Physics.Arcade.Sprite {
     }
 
     preUpdate() {
-        let player: PlayerGraphicServer = this.playerGraphics.values().next().value
-        if (!player) {
-            console.log("Tried to move bot to a player we couldn't find")
+
+        // This is expensive - we shouldn't do this for every tick...
+        if (!this.targetEntity) {
+            // Find the nearest player
+            let targetEntity = this.playerSystem.getClosestAliveClient(this.x, this.y)
+            if (!targetEntity) {
+                console.log("Unable to find the closest player to bot")
+            } else {
+                this.targetEntity = targetEntity
+            }
         } else {
-            this.moveToPlayer(player.x, player.y)
+
+            // Chance of finding a new closer target
+            if (Math.random() < 0.1) {
+
+            } else[
+                // But most the time - just get the updated location of original target
+                this.targetEntity = this.playerSystem.getEntityDetail(this.targetEntity.nid)
+            ]
         }
+
+        if (this.targetEntity) {
+            this.moveToPlayer(this.targetEntity.x, this.targetEntity.y)
+        } else {
+            console.log("Not moving to any player for this tick - as there is no target entity")
+        }
+
     }
 
     public moveToPlayer(targetX: number, targetY: number) {

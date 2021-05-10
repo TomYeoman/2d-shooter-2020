@@ -12,6 +12,7 @@ import BulletEntity from '../../common/entity/BulletEntity'
 import NetLog from '../../common/message/NetLog'
 import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
 import ClientHudMessage from '../../common/message/ClientHudMessage'
+import ClientStateMessage from '../../common/message/ClientStateMessage'
 
 class Simulator {
 
@@ -102,6 +103,14 @@ class Simulator {
 
         }
 
+        if (message.protocol.name === messageTypes.CLIENT_STATE_MESSAGE) {
+            const typedMessage: ClientStateMessage = message
+
+            this.renderer.displayText(`You are dead - waiting for respawn` )
+
+
+        }
+
         if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
             const typedMessage: ZombieWaveMessage = message
 
@@ -176,7 +185,7 @@ class Simulator {
             this.nengiClient.addCommand(new MoveCommand(input.w, input.a, input.s, input.d, rotation, delta))
 
         } else {
-            console.log("No entity found for player to move")
+            // console.log("No entity found for player to move")
         }
 
         this.input.releaseKeys()

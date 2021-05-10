@@ -4,6 +4,7 @@ import NetLog from '../message/NetLog'
 import LobbyStateMessage from '../message/LobbyStateMessage'
 import ZombieWaveMessage from '../message/ZombieWaveMessage'
 import ClientHudMessage from '../message/ClientHudMessage'
+import ClientStateMessage from '../message/ClientStateMessage'
 import PlayerEntity from '../entity/PlayerEntity'
 import BotEntity from '../entity/BotEntity'
 import BulletEntity from '../entity/BulletEntity'
@@ -39,7 +40,8 @@ const config:any = {
             [messageTypes.IDENTITY, Identity],
             [messageTypes.LOBBY_STATE_MESSAGE, LobbyStateMessage],
             [messageTypes.ZOMBIE_WAVE_MESSAGE, ZombieWaveMessage],
-            [messageTypes.CLIENT_HUD_MESSAGE, ClientHudMessage]
+            [messageTypes.CLIENT_HUD_MESSAGE, ClientHudMessage],
+            [messageTypes.CLIENT_STATE_MESSAGE, ClientStateMessage]
         ],
         commands: [
             // ['PlayerInput', PlayerInput]

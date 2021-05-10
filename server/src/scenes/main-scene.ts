@@ -223,10 +223,7 @@ export default class MainScene extends Phaser.Scene {
             entitySelf.client = client;
             client.entitySelf = entitySelf;
             client.entityPhaser = playerGraphic;
-
-            client.positions = [];
             client.name = command.name;
-            client.positions = [];
 
             // define the view (the area of the game visible to this client, all else is culled)
             client.view = {

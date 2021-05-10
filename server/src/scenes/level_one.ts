@@ -2,7 +2,7 @@
 import Phaser from "phaser";
 const path = require("path");
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
-import { commandTypes, lobbyState, SCENE_NAMES } from "../../../common/types/types";
+import { CLIENT_SCENE_STATE, commandTypes, lobbyState, SCENE_NAMES } from "../../../common/types/types";
 import nengiConfig from "../../../common/config/nengiConfig";
 import LobbyStateMessage from "../../../common/message/LobbyStateMessage";
 import FireCommand from "../../../common/command/FireCommand";
@@ -10,6 +10,8 @@ import PlayerEntity from "../../../common/entity/PlayerEntity";
 import PlayerGraphicServer from "../graphics/PlayerGraphicServer";
 import Identity from "../../../common/message/Identity";
 import { BotSystem } from "../systems/BotSystem";
+import ClientStateMessage from "../../../common/message/ClientStateMessage";
+import { PlayerSystem } from "../systems/PlayerSystem";
 /*
 When we start a new level, we need to
 
@@ -36,6 +38,7 @@ export default class LevelOne extends Phaser.Scene {
     // botGraphics: Map<number, BotGraphicServer>
 
     botSystem: BotSystem
+    playerSystem: PlayerSystem
 
 
     // ------------ SETUP ------------//
@@ -82,7 +85,16 @@ export default class LevelOne extends Phaser.Scene {
         this.worldLayer.setCollisionByProperty({ collides: true });
 
 
-        this.botSystem = new BotSystem(this, this.map, this.worldLayer, this.tileset, this.nengiInstance, this.playerGraphics);
+        // Initialise player system
+        this.playerSystem = new PlayerSystem(this, this.map, this.worldLayer, this.nengiInstance);
+
+        // Initialise bot system
+        this.botSystem = new BotSystem(this, this.map, this.worldLayer, this.tileset, this.nengiInstance, this.playerSystem);
+
+        // Tell player system about the bot sprite pool
+        this.playerSystem.botSystem = this.botSystem
+
+        // Lets start the game
         this.botSystem.beginGame();
 
         console.log("Spawning players into level one");
@@ -162,7 +174,7 @@ export default class LevelOne extends Phaser.Scene {
 
                     // Once they have actually loaded the level, they will request to join current game
                     case commandTypes.REQUEST_SPAWN:
-                        console.log("Spawning player into level (creating entity for them");
+                        console.log("Creating initial client information - lobby will spawn player when needed");
                         this.commandRequestSpawn(client.name, client);
                         break;
 
@@ -183,65 +195,20 @@ export default class LevelOne extends Phaser.Scene {
         this.nengiInstance.update();
     }
 
-    commandRequestSpawn(clientName: string, client: any) {
+    commandRequestSpawn(clientName: string, client: ExtendedNengiTypes.Client) {
 
-        // Re-create the new player entity
-        const spawnPoint: any = this.map.findObject("Objects", (obj: any) => obj.name === "human_spawn_point");
-
-        const entitySelf = new PlayerEntity(spawnPoint.x, spawnPoint.y);
-        this.nengiInstance.addEntity(entitySelf);
-
-        // Create a new phaser bot and link to entity, we'll apply physics to for each path check
-        const playerGraphic = new PlayerGraphicServer(this, this.worldLayer, this.nengiInstance, client, entitySelf.x, entitySelf.y, entitySelf.nid, this.deathCallback, this.botSystem);
-        this.playerGraphics.set(entitySelf.nid, playerGraphic);
-
-        // Tell the client about the new entity ID they now control for this level
-        this.nengiInstance.message(new Identity(entitySelf.nid), client);
-
-        // Update self, to be new version in level
-        entitySelf.client = client;
-        client.entitySelf = entitySelf;
-        client.entityPhaser = playerGraphic;
-
-        client.positions = [];
         client.name = clientName;
-        client.positions = [];
+        client.isAlive = false
 
-        // define the view (the area of the game visible to this client, all else is culled)
-        client.view = {
-            x: entitySelf.x,
-            y: entitySelf.y,
-            halfWidth: 99999,
-            halfHeight: 99999
-        };
-    }
+        // TODO - maybe assign a scene / instance to client?
 
-
-    commandMove(command: any, client: any) {
-        if (client.entitySelf && client.entityPhaser) {
-
-            const clientEntityPhaser: PlayerGraphicServer = client.entityPhaser;
-            const clientEntitySelf: PlayerEntity = client.entitySelf;
-
-            // Process move on phaser, and sync with entity
-            clientEntityPhaser.processMove(command);
-            clientEntitySelf.x = clientEntityPhaser.x;
-            clientEntitySelf.y = clientEntityPhaser.y;
-            clientEntitySelf.rotation = clientEntityPhaser.rotation;
-            clientEntityPhaser.weaponSystem.update(command.delta)
-
-
-            // Update player views
-            this.nengiInstance.clients.forEach((client, index) => {
-                client.view.x = clientEntityPhaser.x;
-                client.view.y = clientEntityPhaser.y;
-            });
-        } else {
-            console.log("level one - Trying to process commands on a player entity, which doesn't exist");
-        }
+        this.nengiInstance.message(new ClientStateMessage(CLIENT_SCENE_STATE.DEAD), client);
 
     }
 
+    commandMove(command: any, client: ExtendedNengiTypes.Client) {
+        this.playerSystem.movePlayer(command, client)
+    }
 
 
     commandFire(command: FireCommand, client: any) {
@@ -253,8 +220,5 @@ export default class LevelOne extends Phaser.Scene {
         }
     }
 
-    deathCallback = (playerEntityId: number, damagerEntityId: number):any => {
-        console.log("Hitting death callback")
-    }
 
 }
