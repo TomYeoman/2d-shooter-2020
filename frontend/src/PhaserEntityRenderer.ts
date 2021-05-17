@@ -135,66 +135,6 @@ class PhaserEntityRenderer {
 
     }
 
-    displayUserHUD(clientHudMessage: ClientHudMessage) {
-
-        let healthColor = ""
-
-        if (clientHudMessage.health < 50) {
-            if (clientHudMessage.health < 30) {
-                healthColor = "#d9534f"
-            } else {
-                healthColor = "#f0ad4e"
-            }
-        } else {
-            healthColor = "#5cb85c"
-        }
-
-        const healthStyle:any = {
-            fill:healthColor,
-            align: "left",
-            fontSize: 15,
-            fontStyle: "bold"
-        };
-
-        const otherHudStyle:any = {
-            fill: "#ffffff",
-            align: "left",
-            fontSize: 15,
-            fontStyle: "bold"
-        };
-
-        const healthMessage = `
-        Health  : ${clientHudMessage.health}
-        `
-
-        const hudMessage = `
-        Gun : ${clientHudMessage.gunName}
-        Ammo       : ${clientHudMessage.ammo}
-        `
-
-        const width = Number(this.scene.game.config.width);
-
-
-        if (!this.healthText) {
-            this.healthText = this.scene.add
-                .text(width - 200, 10, healthMessage, healthStyle)
-                // .setOrigin(0.5, 0);
-                .setScrollFactor(0)
-        } else {
-            this.healthText.text = healthMessage
-        }
-
-        if (!this.hudText) {
-            this.hudText = this.scene.add
-                .text(width - 200, 40, hudMessage, otherHudStyle)
-                // .setOrigin(0.5, 0);
-                .setScrollFactor(0)
-        } else {
-            this.hudText.text = hudMessage
-        }
-
-    }
-
     loadLevel(scene: string, nengiClient: nengi.Client) {
 
         if (!Object.values(SCENE_NAMES).includes(scene as SCENE_NAMES)) {

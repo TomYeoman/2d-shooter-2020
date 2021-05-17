@@ -16,6 +16,7 @@ import ClientStateMessage from '../../common/message/ClientStateMessage'
 import { store } from './app/store';
 import { changeSlot } from './features/toolbar/toolbarSlice'
 import { updateGameInfo } from './features/gameinfo/gameInfoSlice'
+import { updatePlayerHUD } from './features/playerhud/playerHUDSlice'
 
 class Simulator {
 
@@ -110,22 +111,17 @@ class Simulator {
             const typedMessage: ClientStateMessage = message
 
             this.renderer.displayText(`You are dead - waiting for respawn` )
-
-
         }
 
         if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
-            store.dispatch(updateGameInfo(message))
+            let {protocol, ...rest} = message;
+
+            store.dispatch(updateGameInfo(rest))
         }
 
         if (message.protocol.name === messageTypes.CLIENT_HUD_MESSAGE) {
-            const typedMessage: ClientHudMessage = message
-
-            console.log("Recieved update on player HUD")
-            console.log(typedMessage)
-
-            this.renderer.displayUserHUD(typedMessage)
-
+            let {protocol, ...rest} = message;
+            store.dispatch(updatePlayerHUD(rest))
         }
 
         if (message.protocol.name === messageTypes.NET_LOG) {
