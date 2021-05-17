@@ -15,6 +15,7 @@ import ClientHudMessage from '../../common/message/ClientHudMessage'
 import ClientStateMessage from '../../common/message/ClientStateMessage'
 import { store } from './app/store';
 import { changeSlot } from './features/toolbar/toolbarSlice'
+import { updateGameInfo } from './features/gameinfo/gameInfoSlice'
 
 class Simulator {
 
@@ -114,12 +115,15 @@ class Simulator {
         }
 
         if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
-            const typedMessage: ZombieWaveMessage = message
 
-            console.log("Recieved update on zombie waves")
-            console.log(typedMessage)
+            store.dispatch(updateGameInfo(message))
 
-            this.renderer.displayWaveHud(typedMessage)
+            // const typedMessage: ZombieWaveMessage = message
+
+            // console.log("Recieved update on zombie waves")
+            // console.log(typedMessage)
+
+            // this.renderer.displayWaveHud(typedMessage)
         }
 
         if (message.protocol.name === messageTypes.CLIENT_HUD_MESSAGE) {

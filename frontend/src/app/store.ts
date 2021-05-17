@@ -1,11 +1,13 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
 import toolbarReducer from '../features/toolbar/toolbarSlice';
+import gameinfoReducer from '../features/gameinfo/gameInfoSlice';
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
     toolbar: toolbarReducer,
+    gameInfo: gameinfoReducer,
   },
 });
 
