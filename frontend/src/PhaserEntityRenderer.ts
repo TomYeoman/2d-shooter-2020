@@ -135,43 +135,6 @@ class PhaserEntityRenderer {
 
     }
 
-    displayWaveHud(zombieWaveMessage: ZombieWaveMessage) {
-
-        const textStyle:any = {
-            fill: "#ffffff",
-            align: "left",
-            // fontSize: 15,
-            // fontStyle: "bold"
-        };
-
-        const message = `
-        Game State          : ${zombieWaveMessage.gameStatus}
-        Current wave        : ${zombieWaveMessage.currentWave}
-        Zombies Remaining   : ${zombieWaveMessage.zombiesRemaining}
-        Zombies Killed      : ${zombieWaveMessage.zombiesKilled}
-        Zombies Alive       : ${zombieWaveMessage.zombiesAlive}
-        Players             : ${zombieWaveMessage.playersAlive} / ${zombieWaveMessage.playersTotal}
-    `
-
-        if (!this.waveInfoText) {
-            this.waveInfoText = this.scene.add
-                .text(10, 10, message, textStyle)
-                // .setOrigin(0.5, 0);
-                .setScrollFactor(0)
-
-        } else {
-            this.waveInfoText.text = message
-        }
-
-        // const loadingBar = this.scene.add.graphics();
-        // loadingBar.clear();
-        // loadingBar.fillStyle(0xffffff, 1);
-        // loadingBar.fillRect(width / 2 - 375, height / 2 - 25, 750 * value, 50);
-        // const mod = Phaser.Math.FloorTo(((value * 100) % 3) + 1, 0);
-        // const text = `Loading${".".repeat(mod)}${mod <= 2 ? " ".repeat(3 - mod) : ""}`;
-
-    }
-
     displayUserHUD(clientHudMessage: ClientHudMessage) {
 
         let healthColor = ""

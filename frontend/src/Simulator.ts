@@ -115,15 +115,7 @@ class Simulator {
         }
 
         if (message.protocol.name === messageTypes.ZOMBIE_WAVE_MESSAGE) {
-
             store.dispatch(updateGameInfo(message))
-
-            // const typedMessage: ZombieWaveMessage = message
-
-            // console.log("Recieved update on zombie waves")
-            // console.log(typedMessage)
-
-            // this.renderer.displayWaveHud(typedMessage)
         }
 
         if (message.protocol.name === messageTypes.CLIENT_HUD_MESSAGE) {
