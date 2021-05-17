@@ -3,14 +3,15 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { store } from './app/store';
 import Main from './game/Main';
-import { Counter } from './features/counter/Counter';
+import { Toolbar } from './features/toolbar/Toolbar';
+import "./assets/main.css";
 
 ReactDOM.render(
   <React.StrictMode>
         <Provider store={store}>
 
       <Main />
-      <Counter/>
+      <Toolbar/>
       </Provider>
 
   </React.StrictMode>,

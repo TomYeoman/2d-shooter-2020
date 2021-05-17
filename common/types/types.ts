@@ -13,7 +13,8 @@ export enum commandTypes {
     REQUEST_GAME_INFO = "REQUEST_GAME_INFO",
     REQUEST_SPAWN = "REQUEST_SPAWN",
     MOVE_COMMAND = "MOVE_COMMAND",
-    FIRE_COMMAND = "FIRE_COMMAND"
+    FIRE_COMMAND = "FIRE_COMMAND",
+    MODIFY_TOOLBAR_COMMAND = "MODIFY_TOOLBAR_COMMAND"
 }
 
 export enum messageTypes {
@@ -23,6 +24,7 @@ export enum messageTypes {
     NET_LOG = "NET_LOG",
     LOBBY_STATE_MESSAGE = "LOBBY_STATE_MESSAGE",
     IDENTITY = "IDENTITY",
+    TOOLBAR_UPDATED_MESSAGE = "TOOLBAR_UPDATED_MESSAGE",
 }
 
 export enum entityTypes {

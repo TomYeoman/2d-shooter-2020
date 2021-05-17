@@ -70,7 +70,7 @@ export class LevelOne extends Phaser.Scene {
 
     network.entities.forEach((snapshot: any) => {
       snapshot.createEntities.forEach((entity: any) => {
-        console.log(`creating new ${entity.protocol.name} entity `, entity)
+        // console.log(`creating new ${entity.protocol.name} entity `, entity)
         this.simulator.createEntity(entity)
       })
 
@@ -80,13 +80,13 @@ export class LevelOne extends Phaser.Scene {
       })
 
       snapshot.deleteEntities.forEach((id: number) => {
-        console.log(`Deleting entity `, id)
+        // console.log(`Deleting entity `, id)
         this.simulator.deleteEntity(id)
       })
     })
 
     network.messages.forEach((message: any) => {
-      console.log(`Recieved ${message.protocol.name} message:`, message);
+      // console.log(`Recieved ${message.protocol.name} message:`, message);
       this.simulator.processMessage(message)
     });
 

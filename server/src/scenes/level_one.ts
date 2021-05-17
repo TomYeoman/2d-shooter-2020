@@ -11,7 +11,9 @@ import PlayerGraphicServer from "../graphics/PlayerGraphicServer";
 import Identity from "../../../common/message/Identity";
 import { BotSystem } from "../systems/BotSystem";
 import ClientStateMessage from "../../../common/message/ClientStateMessage";
+import ToolbarUpdatedMessage from "../../../common/message/ToolbarUpdatedMessage";
 import { PlayerSystem } from "../systems/PlayerSystem";
+import ModifyToolbarCommand from "../../../common/command/ModifyToolbarCommand";
 /*
 When we start a new level, we need to
 
@@ -112,23 +114,7 @@ export default class LevelOne extends Phaser.Scene {
 
         this.nengiInstance.onDisconnect((client: any) => {
             console.log("disconnected in level-one", client.id);
-            // this.nengiInstance.emit('disconnected in level-one', client)
-            if (client.entitySelf && client.entityPhaser) {
-                console.log(`Player ${client.entitySelf.nid} disconnected from level-one, clearing down entities`);
-                this.nengiInstance.removeEntity(client.entitySelf);
-
-                // Delete server copy
-                const player = this.playerGraphics.get(client.entityPhaser.associatedEntityId);
-                player.destroy();
-                this.playerGraphics.delete(client.entityPhaser.associatedEntityId);
-
-                // Delete client information
-                client.entitySelf = null
-                client.entityPhaser = null
-
-            } else {
-                console.log("Player disconnected from level one, but was unable to find either the entity, or the entity phaser");
-            }
+            this.playerSystem.deletePlayer(client)
         });
 
 
@@ -185,6 +171,9 @@ export default class LevelOne extends Phaser.Scene {
                     case commandTypes.FIRE_COMMAND:
                         this.commandFire(command, client);
                         break;
+                    case commandTypes.MODIFY_TOOLBAR_COMMAND:
+                        this.commandModifyToolbar(command, client);
+                        break;
                     default:
                         console.log(`Unrecognised command ${command.protocol.name} for ${client.name}`);
                 }
@@ -202,6 +191,7 @@ export default class LevelOne extends Phaser.Scene {
 
         // TODO - maybe assign a scene / instance to client?
 
+        this.playerSystem.createPlayer(client)
         this.nengiInstance.message(new ClientStateMessage(CLIENT_SCENE_STATE.DEAD), client);
 
     }
@@ -217,6 +207,17 @@ export default class LevelOne extends Phaser.Scene {
             // Whilst we send ID@s of entity over the wire, we need to call phaser on the server
             const clientEntityPhaser: PlayerGraphicServer = client.entityPhaser;
             clientEntityPhaser.fire();
+        }
+    }
+
+    commandModifyToolbar(command: ModifyToolbarCommand, client: ExtendedNengiTypes.Client) {
+
+        if (client.entitySelf && client.entityPhaser) {
+            console.log({ selectedSlot: command.selectedSlot })
+            client.selectedSlot = command.selectedSlot
+
+            this.nengiInstance.message(new ToolbarUpdatedMessage(command.selectedSlot, ""), client);
+
         }
     }
 

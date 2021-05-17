@@ -95,15 +95,21 @@ class InputSystem {
             }
         })
 
-        document.addEventListener('pointerdown', event => {
-            this.currentState.mouseDown = true
-            this.frameState.mouseDown = true
-        })
+        let mainWindow = document.getElementById('game-here')
+        // debugger
+        if (mainWindow) {
+
+            mainWindow.addEventListener('pointerdown', event => {
+                this.currentState.mouseDown = true
+                this.frameState.mouseDown = true
+            })
 
 
-        document.addEventListener('mouseup', event => {
-            this.currentState.mouseDown = false
-        })
+            mainWindow.addEventListener('mouseup', event => {
+                this.currentState.mouseDown = false
+            })
+        }
+
     }
 
     releaseKeys() {

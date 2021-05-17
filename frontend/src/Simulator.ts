@@ -13,6 +13,8 @@ import NetLog from '../../common/message/NetLog'
 import ZombieWaveMessage from '../../common/message/ZombieWaveMessage'
 import ClientHudMessage from '../../common/message/ClientHudMessage'
 import ClientStateMessage from '../../common/message/ClientStateMessage'
+import { store } from './app/store';
+import { changeSlot } from './features/toolbar/toolbarSlice'
 
 class Simulator {
 
@@ -156,6 +158,10 @@ class Simulator {
                 this.renderer.assignClientEntity(message.entityId)
             }
 
+        }
+
+        if (message.protocol.name === messageTypes.TOOLBAR_UPDATED_MESSAGE) {
+            store.dispatch(changeSlot(message.selectedSlot))
         }
     }
 

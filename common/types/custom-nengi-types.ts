@@ -61,6 +61,7 @@ export declare namespace ExtendedNengiTypes {
        view: View
         name: string
         isAlive: boolean
+        selectedSlot: number
     }
 
     let testProperty: any;

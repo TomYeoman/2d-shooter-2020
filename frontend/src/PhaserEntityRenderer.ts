@@ -69,7 +69,7 @@ class PhaserEntityRenderer {
         camera.startFollow(this.myEntity, true, 0.1, 0.1);
 
         camera.setBounds(0, 0, this.sceneMap.widthInPixels, this.sceneMap.heightInPixels);
-        // camera.zoom= 2
+        camera.zoom= 1
     }
 
     updateEntity(update: any) {

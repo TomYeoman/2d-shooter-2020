@@ -14,9 +14,11 @@ import FireCommand from '../command/FireCommand'
 import {commandTypes, messageTypes, entityTypes} from '../types/types'
 import RequestSpawn from '../command/RequestSpawn'
 import RequestJoinGame from '../command/RequestJoinGame'
+import ModifyToolbarCommand from '../command/ModifyToolbarCommand'
+import ToolbarUpdatedMessage from '../message/ToolbarUpdatedMessage'
 
 const config:any = {
-    UPDATE_RATE: 12,
+    UPDATE_RATE: 60,
 
     ID_BINARY_TYPE: nengi.UInt16,
     TYPE_BINARY_TYPE: nengi.UInt8,
@@ -41,7 +43,8 @@ const config:any = {
             [messageTypes.LOBBY_STATE_MESSAGE, LobbyStateMessage],
             [messageTypes.ZOMBIE_WAVE_MESSAGE, ZombieWaveMessage],
             [messageTypes.CLIENT_HUD_MESSAGE, ClientHudMessage],
-            [messageTypes.CLIENT_STATE_MESSAGE, ClientStateMessage]
+            [messageTypes.CLIENT_STATE_MESSAGE, ClientStateMessage],
+            [messageTypes.TOOLBAR_UPDATED_MESSAGE, ToolbarUpdatedMessage]
         ],
         commands: [
             // ['PlayerInput', PlayerInput]
@@ -49,6 +52,7 @@ const config:any = {
             [commandTypes.REQUEST_GAME_INFO, RequestJoinGame],
             [commandTypes.REQUEST_SPAWN, RequestSpawn],
             [commandTypes.FIRE_COMMAND, FireCommand],
+            [commandTypes.MODIFY_TOOLBAR_COMMAND, ModifyToolbarCommand],
         ],
         basics: []
     }

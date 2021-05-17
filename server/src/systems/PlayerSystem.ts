@@ -72,6 +72,27 @@ export class PlayerSystem {
         };
     }
 
+    // Spawn individual client
+    deletePlayer(client: ExtendedNengiTypes.Client) {
+
+        if (client.entitySelf && client.entityPhaser) {
+            console.log(`Player ${client.entitySelf.nid} disconnected from level-one, clearing down entities`);
+            this.nengiInstance.removeEntity(client.entitySelf);
+
+            // Delete server copy
+            const player = this.playerGraphics.get(client.entityPhaser.associatedEntityId);
+            player.destroy();
+            this.playerGraphics.delete(client.entityPhaser.associatedEntityId);
+
+            // Delete client information
+            client.entitySelf = null
+            client.entityPhaser = null
+
+        } else {
+            console.log("Player disconnected from level one, but was unable to find either the entity, or the entity phaser");
+        }
+    }
+
     deathCallback = (playerEntityId: number, damagerEntityId: number):any => {
         console.log("Hitting death callback")
     }

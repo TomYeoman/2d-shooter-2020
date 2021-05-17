@@ -2,6 +2,9 @@ import nengi from "nengi";
 import { clientFPS, phaserGameConfig } from "../../../common/config/phaserConfig";
 import { installScenes } from ".";
 import {SCENE_NAMES} from "../../../common/types/types"
+import nengiConfig from "../../../common/config/nengiConfig";
+import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
+import { store } from '../app/store';
 
 export const newGame = () => {
 
@@ -18,12 +21,25 @@ export const newGame = () => {
         // scene: MainScene,
     };
 
+        // a very hackie trick to pass some custom data
+    // but it work well :)
+    const nengiClient = new nengi.Client(
+        nengiConfig,
+        100
+    ) as ExtendedNengiTypes.Client;
+
+    gameConfig.callbacks = {
+        preBoot: () => {
+        return { nengiClient };
+        }
+    };
+
     const phaserGame = new Phaser.Game(gameConfig);
 
     // Add scenes to our game for later (loading, menu, main, and settings)
     installScenes(phaserGame);
 
-    phaserGame.scene.start(SCENE_NAMES.MAIN)
+    phaserGame.scene.start(SCENE_NAMES.MAIN, {nengiClient, storeRef: store})
     return phaserGame
 };
 

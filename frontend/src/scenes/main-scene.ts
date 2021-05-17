@@ -4,7 +4,8 @@ import nengiConfig from "../../../common/config/nengiConfig";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Simulator from "../Simulator";
 import RequestJoinGame from '../../../common/command/RequestJoinGame'
-
+import ModifyToolbarCommand from '../../../common/command/ModifyToolbarCommand'
+import { store } from '../app/store'
 // const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 //   active: false,
 //   visible: false,
@@ -19,16 +20,69 @@ export class MainScene extends Phaser.Scene {
   last_ts: number
 
   levelName = "spawn_island";
+  store: typeof store
+  oldState:  ReturnType<typeof store.getState>
 
-  constructor() {
-    super({});
+  init({ nengiClient, storeRef }: {nengiClient: any, storeRef: typeof store}) {
+    // super({});
+    this.nengiClient = nengiClient;
+    // try {
+    //     // @ts-ignore
+    //     const { nengiClient } = nengiClient;
+    //     this.nengiClient = nengiClient;
 
-    const client = new nengi.Client(
-      nengiConfig,
-      100
-    ) as ExtendedNengiTypes.Client;
-    this.nengiClient = client;
+    // } catch (e) {
+    //     console.log("Error extracting preBoot data", e);
+    // }
+
+    // const client = new nengi.Client(
+    //   nengiConfig,
+    //   100
+    // ) as ExtendedNengiTypes.Client;
+    // this.nengiClient = client;
+
+      // Start listening for changes
+      // debugger
+    this.store = storeRef
+    this.store.subscribe(() => this.stateUpdated())
+
+
   }
+
+  stateUpdated() {
+    // console.log("stat eupdated")
+    const newState = this.store.getState()
+    console.log(newState)
+    // Do we need to make changes?
+
+    if (!this.oldState) {
+      const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
+      this.nengiClient.addCommand(ModToolbarCommand)
+
+    } else {
+        if (this.oldState.toolbar.selectedSlot !== newState.toolbar.selectedSlot) {
+          const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
+          this.nengiClient.addCommand(ModToolbarCommand)
+          debugger
+        }
+    }
+    // Trigger UIActions, then empty the actions array
+
+    // const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
+    // this.nengiClient.addCommand(ModToolbarCommand)
+
+    // Optimise later - you'll alwayhs need to do atleast 1 action this way
+    // if (this.oldState.toolbar.selectedSlot !== newState.toolbar.selectedSlot) {
+    //   const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
+    //   this.nengiClient.addCommand(ModToolbarCommand)
+    //   debugger
+    // }
+
+    this.oldState = newState
+
+
+  }
+
 
   public preload() {
     this.load.image("player", "survivor-shotgun.png");

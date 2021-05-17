@@ -20,7 +20,9 @@ export function Counter() {
 
   return (
     <div>
-      <div className={styles.row}>
+
+      <div className="bg-red-500 via-red-500">Test</div>
+      <div className="bg-black text-lg">
         <button
           className={styles.button}
           aria-label="Decrement value"
