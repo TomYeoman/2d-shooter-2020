@@ -253,8 +253,8 @@ export class BotSystem {
     private getWaveSize(currentWave: number, waveType: string) {
 
         return 1
-        return (config.zombies.initialAmount + this.playerSystem.getTotalPlayerCount()) *
-            ((this.currentWave * config.zombies.perWave) + config.zombies.perPlayer);
+        // return (config.zombies.initialAmount + this.playerSystem.getTotalPlayerCount()) *
+        //     ((this.currentWave * config.zombies.perWave) + config.zombies.perPlayer);
 
             // 1 = (10 + 10) * ((1 * 5) + 5) = 200
             // 2 = (10 + 10) * ((2 * 5) + 5) = 200

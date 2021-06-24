@@ -1,17 +1,21 @@
 import errorHandler from "errorhandler";
-import app from "./app";
 
 require("@geckos.io/phaser-on-nodejs");
+import { newGame } from "./game/main";
+import nengiConfig from '../../common/config/nengiConfig'
+import nengi from 'nengi'
 
-import { GameServer } from "./socket/game_server";
-import {test} from "../test";
+class GameServer {
+    // Server
+    private nengiInstance: any
 
-// Error Handler. Provides full stack - remove for production
-app.use(errorHandler());
+    constructor() {
+      this.nengiInstance = new nengi.Instance(nengiConfig, { port: 8079 })
+      newGame(this.nengiInstance);
+    }
+  }
 
-test();
-const expressApp = new GameServer(app).getApp();
+new GameServer()
 
-export default {expressApp};
 
 
