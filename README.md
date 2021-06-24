@@ -53,7 +53,7 @@ Game Ideas
 - FFA - most kills
 - Battle Royale
 - Boss Survival
-
+- Planet Col - https://mrmuffinman61.itch.io/planet-colonizer
 
 Zombies -
  - one in X drops pet, or other special for collection log
