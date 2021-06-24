@@ -4,7 +4,7 @@ import InputSystem from "./InputSystem"
 import MoveCommand from '../../common/command/MoveCommand'
 import nengi from 'nengi'
 import PhaserEntityRenderer from './PhaserEntityRenderer'
-import { entityTypes, lobbyState, messageTypes } from '../../common/types/types'
+import { entityTypes, lobbyState, messageTypes, Sounds } from '../../common/types/types'
 import LobbyStateMessage from '../../common/message/LobbyStateMessage'
 import FireCommand from '../../common/command/FireCommand'
 import BotEntity from '../../common/entity/BotEntity'
@@ -19,25 +19,22 @@ import { updateGameInfo } from './features/gameinfo/gameInfoSlice'
 import { updatePlayerHUD } from './features/playerhud/playerHUDSlice'
 
 class Simulator {
-
-    nengiClient: nengi.Client
     input: InputSystem
     entities: Map<number, any>
     renderer: PhaserEntityRenderer
 
     entityIdSelf : number
-    myEntity : PlayerEntity | null
+    myEntity: PlayerEntity | null
+    prevHealth = 0
 
-    constructor(nengiClient: nengi.Client, phaserInstance: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
-        this.nengiClient = nengiClient
+    constructor(private nengiClient: nengi.Client, private scene: Phaser.Scene, sceneMap: Phaser.Tilemaps.Tilemap) {
         this.input = new InputSystem()
         this.entities = new Map()
 
         this.entityIdSelf = -1
 
-
         this.myEntity = null
-        this.renderer = new PhaserEntityRenderer(phaserInstance, sceneMap)
+        this.renderer = new PhaserEntityRenderer(scene, sceneMap)
     }
 
     createEntity(entity: any) {
@@ -64,6 +61,8 @@ class Simulator {
         }
 
         if (entity.protocol.name === entityTypes.BULLET_ENTITY) {
+            this.scene.sound.play(Sounds.BULLET);
+
             let newEntity = new BulletEntity(entity.x, entity.y, entity.rotation)
             Object.assign(newEntity, entity)
             this.entities.set(newEntity.nid, newEntity)
@@ -121,7 +120,19 @@ class Simulator {
 
         if (message.protocol.name === messageTypes.CLIENT_HUD_MESSAGE) {
             let {protocol, ...rest} = message;
+            let currHealth = rest.health
+
+            console.log( this.prevHealth)
+            console.log(currHealth)
+
+            if (this.prevHealth > currHealth) {
+                console.log("Health was less")
+                this.scene.sound.play(Sounds.ZOMBIE_BITE_ONE);
+            }
+
             store.dispatch(updatePlayerHUD(rest))
+
+            this.prevHealth = currHealth
         }
 
         if (message.protocol.name === messageTypes.NET_LOG) {

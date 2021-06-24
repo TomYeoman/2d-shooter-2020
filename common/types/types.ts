@@ -1,3 +1,8 @@
+export enum Sounds {
+    BULLET = "bullet",
+    ZOMBIE_BITE_ONE = "zombie_bite_one"
+}
+
 export enum lobbyState {
     WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS",
     IN_LOBBY = "IN_LOBBY",

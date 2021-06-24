@@ -2,6 +2,7 @@ import nengi from "nengi";
 import Phaser from "phaser";
 import RequestSpawn from "../../../common/command/RequestSpawn";
 import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
+import { Sounds } from "../../../common/types/types";
 import { SCENE_NAMES } from "../game";
 import Simulator from "../Simulator";
 
@@ -23,9 +24,16 @@ export class LevelOne extends Phaser.Scene {
     this.load.image("tiles", "tuxmon-sample-32px-extruded.png");
     this.load.tilemapTiledJSON(this.levelName, "zm_castle.json");
 
+    this.load.audio(Sounds.BULLET, 'bullet.mp3');
+    this.load.audio(Sounds.ZOMBIE_BITE_ONE, 'zombie_bite_one.mp3');
+
   }
 
   create({ nengiClient }: { nengiClient: ExtendedNengiTypes.Client }) {
+
+    // this.load.audio(Sounds.BULLET);
+    // var music = this.scene.sound.add(Sounds.BULLET);
+
     //  debugger
     console.log("Create level one")
     this.nengiClient = nengiClient
@@ -53,7 +61,6 @@ export class LevelOne extends Phaser.Scene {
 
     const RequestSpawnCommand = new RequestSpawn("")
     this.nengiClient.addCommand(RequestSpawnCommand)
-
 
   }
 

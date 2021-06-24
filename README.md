@@ -62,3 +62,6 @@ Zombies -
 
 Main screen
 - ANimated background of players in game
+
+Sound ideas
+- Door open 3 (sci fi doors ) - weapon upgrade

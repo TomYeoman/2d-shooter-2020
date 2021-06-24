@@ -18,7 +18,7 @@ export const playerHUDSlice = createSlice({
   reducers: {
     updatePlayerHUD: (state, action: PayloadAction<PlayerHUD>) => {
 
-      console.log({healthRecieved: action.payload.health})
+      console.log({action})
       return {
         ammo: action.payload.ammo,
         gunName: action.payload.gunName,

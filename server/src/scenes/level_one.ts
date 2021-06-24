@@ -191,7 +191,7 @@ export default class LevelOne extends Phaser.Scene {
 
         // TODO - maybe assign a scene / instance to client?
 
-        // this.playerSystem.createPlayer(client)
+        this.playerSystem.createPlayer(client)
         this.nengiInstance.message(new ClientStateMessage(CLIENT_SCENE_STATE.DEAD), client);
 
     }

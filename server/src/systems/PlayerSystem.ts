@@ -27,8 +27,10 @@ export class PlayerSystem {
     }
 
     respawnAllPlayers() {
-        this.nengiInstance.clients.forEach((client:  ExtendedNengiTypes.Client) => {
-            this.createPlayer(client)
+        this.nengiInstance.clients.forEach((client: ExtendedNengiTypes.Client) => {
+            if (!client.isAlive) {
+                this.createPlayer(client)
+            }
         })
     }
 
