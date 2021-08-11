@@ -7,6 +7,7 @@ import { Toolbar } from './features/toolbar/Toolbar';
 import "./assets/main.css";
 import { GameInfo } from './features/gameinfo/GameInfo';
 import { PlayerHUD } from './features/playerhud/PlayerHUD';
+import { DebugBar } from './features/debugbar/DebugBar';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -15,6 +16,7 @@ ReactDOM.render(
       <Main />
       <GameInfo/>
       <Toolbar/>
+      <DebugBar/>
       <PlayerHUD/>
       </Provider>
 

@@ -13,10 +13,10 @@ export const newGame = () => {
         type: Phaser.AUTO,
         width: window.innerWidth,
         height: window.innerHeight,
-        fps: {
-            target: clientFPS,
-            forceSetTimeOut: true,
-        },
+        // fps: {
+        //     target: clientFPS,
+        //     forceSetTimeOut: true,
+        // },
         parent: "game-here",
         // scene: MainScene,
     };

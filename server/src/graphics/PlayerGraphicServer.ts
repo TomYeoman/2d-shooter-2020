@@ -60,7 +60,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
               });
 
               this.scene.physics.add.overlap(this, this.botSystem.bots, (player: PlayerGraphicServer, zombie: Bot) => {
-                console.log("zombie hit a player")
+                // console.log("zombie hit a player")
 
                 player.takeDamage(zombie.associatedEntityId)
 
@@ -147,7 +147,7 @@ export default class PlayerGraphicServer extends Phaser.Physics.Arcade.Sprite{
 
         this.rotation = command.rotation;
 
-        const speed = this.speed * command.delta * 10;
+        const speed = this.speed * command.delta * 30;
         // const prevVelocity = this.body.velocity.clone();
 
         // Stop any previous movement from the last frame

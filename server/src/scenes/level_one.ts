@@ -14,6 +14,7 @@ import ClientStateMessage from "../../../common/message/ClientStateMessage";
 import ToolbarUpdatedMessage from "../../../common/message/ToolbarUpdatedMessage";
 import { PlayerSystem } from "../systems/PlayerSystem";
 import ModifyToolbarCommand from "../../../common/command/ModifyToolbarCommand";
+import RequestRunDebugCommand from "../../../common/command/RequestRunDebugCommand";
 /*
 When we start a new level, we need to
 
@@ -85,7 +86,6 @@ export default class LevelOne extends Phaser.Scene {
 
         this.worldLayer = this.map.createStaticLayer("LevelOneWorld", this.tileset, 0, 0);
         this.worldLayer.setCollisionByProperty({ collides: true });
-
 
         // Initialise player system
         this.playerSystem = new PlayerSystem(this, this.map, this.worldLayer, this.nengiInstance);
@@ -174,6 +174,10 @@ export default class LevelOne extends Phaser.Scene {
                     case commandTypes.MODIFY_TOOLBAR_COMMAND:
                         this.commandModifyToolbar(command, client);
                         break;
+                    case commandTypes.REQUEST_RUN_DEBUG_COMMAND:
+                        // console.log("Requesting run debug")
+                        this.commandRunDebugCommand(command, client);
+                        break;
                     default:
                         console.log(`Unrecognised command ${command.protocol.name} for ${client.name}`);
                 }
@@ -208,6 +212,11 @@ export default class LevelOne extends Phaser.Scene {
             const clientEntityPhaser: PlayerGraphicServer = client.entityPhaser;
             clientEntityPhaser.fire();
         }
+    }
+
+    commandRunDebugCommand(command: RequestRunDebugCommand, client: any) {
+        console.log(`running debug request ${command.debugCommand}`)
+        // this.playerSystem.deletePlayer(client)
     }
 
     commandModifyToolbar(command: ModifyToolbarCommand, client: ExtendedNengiTypes.Client) {

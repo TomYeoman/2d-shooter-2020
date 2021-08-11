@@ -74,7 +74,6 @@ export class PlayerSystem {
         };
     }
 
-    // Spawn individual client
     deletePlayer(client: ExtendedNengiTypes.Client) {
 
         if (client.entitySelf && client.entityPhaser) {
@@ -95,7 +94,15 @@ export class PlayerSystem {
         }
     }
 
-    deathCallback = (playerEntityId: number, damagerEntityId: number):any => {
+    deathCallback = (playerEntityId: number, damagerEntityId: number): any => {
+
+        this.nengiInstance.clients.forEach((client) => {
+            if (client.entitySelf && client.isAlive ) {
+                console.log("Killed player ", +playerEntityId)
+                this.deletePlayer(client)
+            }
+        })
+
         console.log("Hitting death callback")
     }
 
@@ -120,7 +127,7 @@ export class PlayerSystem {
     }
 
     getTotalPlayerCount = ():any => {
-        let total = 0
+        let total = 25
         this.nengiInstance.clients.forEach((client) => {
             if (!client.isAlive) {
                 total++

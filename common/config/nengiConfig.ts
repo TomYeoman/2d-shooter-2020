@@ -14,6 +14,7 @@ import FireCommand from '../command/FireCommand'
 import {commandTypes, messageTypes, entityTypes} from '../types/types'
 import RequestSpawn from '../command/RequestSpawn'
 import RequestJoinGame from '../command/RequestJoinGame'
+import RequestRunDebugCommand from '../command/RequestRunDebugCommand'
 import ModifyToolbarCommand from '../command/ModifyToolbarCommand'
 import ToolbarUpdatedMessage from '../message/ToolbarUpdatedMessage'
 
@@ -51,6 +52,7 @@ const config:any = {
             [commandTypes.MOVE_COMMAND, MoveCommand],
             [commandTypes.REQUEST_GAME_INFO, RequestJoinGame],
             [commandTypes.REQUEST_SPAWN, RequestSpawn],
+            [commandTypes.REQUEST_RUN_DEBUG_COMMAND, RequestRunDebugCommand],
             [commandTypes.FIRE_COMMAND, FireCommand],
             [commandTypes.MODIFY_TOOLBAR_COMMAND, ModifyToolbarCommand],
         ],

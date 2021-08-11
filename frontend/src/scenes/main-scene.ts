@@ -5,7 +5,9 @@ import { ExtendedNengiTypes } from "../../../common/types/custom-nengi-types";
 import Simulator from "../Simulator";
 import RequestJoinGame from '../../../common/command/RequestJoinGame'
 import ModifyToolbarCommand from '../../../common/command/ModifyToolbarCommand'
+import RequestRunDebugCommand from '../../../common/command/RequestRunDebugCommand'
 import { store } from '../app/store'
+import { REQUEST_DEBUG_COMMAND_TYPES } from "../../../common/types/types";
 // const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 //   active: false,
 //   visible: false,
@@ -55,17 +57,20 @@ export class MainScene extends Phaser.Scene {
     console.log(newState)
     // Do we need to make changes?
 
-    if (!this.oldState) {
-      const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
-      this.nengiClient.addCommand(ModToolbarCommand)
+    // if (!this.oldState) {
+    //   const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
+    //   this.nengiClient.addCommand(ModToolbarCommand)
 
-    } else {
-        if (this.oldState.toolbar.selectedSlot !== newState.toolbar.selectedSlot) {
+    // } else {
+        if (this.oldState?.toolbar?.selectedSlot && this.oldState.toolbar.selectedSlot !== newState.toolbar.selectedSlot) {
           const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)
           this.nengiClient.addCommand(ModToolbarCommand)
-          debugger
         }
-    }
+        if (this.oldState?.debugBar?.killFlag && this.oldState?.debugBar?.killFlag  !== newState.debugBar.killFlag) {
+          const requestRunDebugCommand = new RequestRunDebugCommand(REQUEST_DEBUG_COMMAND_TYPES.KILL)
+          this.nengiClient.addCommand(requestRunDebugCommand)
+        }
+    // }
     // Trigger UIActions, then empty the actions array
 
     // const ModToolbarCommand = new ModifyToolbarCommand(newState.toolbar.selectedSlot)

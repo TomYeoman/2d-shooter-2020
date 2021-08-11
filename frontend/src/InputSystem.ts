@@ -96,7 +96,6 @@ class InputSystem {
         })
 
         let mainWindow = document.getElementById('game-here')
-        // debugger
         if (mainWindow) {
 
             mainWindow.addEventListener('pointerdown', event => {

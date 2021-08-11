@@ -82,7 +82,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
       this.setSize(10, 20)
       this.setDisplaySize(10, 20)
 
-      const vec = this.scene.physics.velocityFromAngle(angle, 150);
+      const vec = this.scene.physics.velocityFromAngle(angle, 250);
       this.setVelocity(vec.x, vec.y);
       this.rotation = Phaser.Math.DegToRad(angle) + 1.57079633
 

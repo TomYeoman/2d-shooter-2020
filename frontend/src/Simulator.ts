@@ -46,7 +46,6 @@ class Simulator {
             this.entities.set(newEntity.nid, newEntity)
             this.renderer.createEntity(entity)
 
-            // debugger;
             if (entity.nid === this.entityIdSelf) {
                 console.log(`Discovered local version of my remote entity, with id ${entity.nid}`)
                 this.myEntity = newEntity
@@ -61,7 +60,7 @@ class Simulator {
         }
 
         if (entity.protocol.name === entityTypes.BULLET_ENTITY) {
-            this.scene.sound.play(Sounds.BULLET);
+            // this.scene.sound.play(Sounds.BULLET);
 
             let newEntity = new BulletEntity(entity.x, entity.y, entity.rotation)
             Object.assign(newEntity, entity)
@@ -122,12 +121,9 @@ class Simulator {
             let {protocol, ...rest} = message;
             let currHealth = rest.health
 
-            console.log( this.prevHealth)
-            console.log(currHealth)
-
             if (this.prevHealth > currHealth) {
                 console.log("Health was less")
-                this.scene.sound.play(Sounds.ZOMBIE_BITE_ONE);
+                // this.scene.sound.play(Sounds.ZOMBIE_BITE_ONE);
             }
 
             store.dispatch(updatePlayerHUD(rest))
